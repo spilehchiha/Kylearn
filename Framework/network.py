@@ -9,10 +9,4 @@ class Network:
     def network(self, **kwargs):
         pass
 
-    @abstractmethod
-    def optimizer(self):
-        pass
 
-    @abstractmethod
-    def loss(self, **kwargs):
-        pass

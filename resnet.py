@@ -5,16 +5,16 @@ import collections
 
 class Resnet(Network):
     def __init__(self):
-        super.__init__()
+        super().__init__()
 
-    def network(self, inputs, num_classes, reuse, scope, is_training=False):
+    def network(self, inputs, num_classes, reuse, scope = None, is_training=False):
 
         def resnet_43(inputs,
                       num_classes,
                       global_pool=True,
                       output_stride=None,
                       reuse=None,
-                      scope='Resnet_43'):
+                      scope=scope):
             blocks = [
                 resnet_block('block1', base_depth=32, num_units=2, stride=2),
                 resnet_block('block2', base_depth=64, num_units=4, stride=2),
@@ -128,7 +128,3 @@ class Resnet(Network):
         logits = resnet_43(inputs, num_classes, reuse, scope)
         return logits
 
-    def optimizer(self):
-        pass
-    def loss(self, logits_labeled, logits_un_teacher, logits_un_student):
-        pass

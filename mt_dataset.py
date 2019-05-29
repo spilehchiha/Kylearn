@@ -4,9 +4,7 @@ from Framework.dataset import Dataset
 
 class MTDataset(Dataset):
     def __init__(self):
-        super.__init__()
-
-
+        super().__init__()
 
     def process_labels(self):
         self.labeled = self.train_set[self.train_set['y'] != -1]
