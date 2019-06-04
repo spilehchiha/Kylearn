@@ -1,4 +1,4 @@
-from Framework.network import Network
+from .Framework.network import Network
 import tensorflow as tf
 import collections
 
