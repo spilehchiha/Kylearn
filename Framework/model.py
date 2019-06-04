@@ -4,13 +4,18 @@ from abc import abstractmethod
 FLAGS = flags.FLAGS
 
 class Model():
-    def __init__(self, Network, ckpt_path, tsboard_path):
+    def __init__(self, ckpt_path, tsboard_path, **kwargs):
         self.checkpoint_path = ckpt_path
         self.tensorboard_path = tsboard_path
-        self.Network = Network
+        self.session = tf.Session()
+        self.global_step = tf.train.get_or_create_global_step()
+        self.saver = tf.train.Saver(max_to_keep=11)
+        self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
-    def network(self, **kwargs):
-        return self.Network.network(**kwargs)
+
+    @abstractmethod
+    def classifier(self, **kwargs):
+        pass
 
     @abstractmethod
     def initialize_variables(self, **kwargs):
@@ -34,9 +39,12 @@ class Model():
         pass
 
     @abstractmethod
-    def test(self, **kwargs):
+    def save_checkpoint(self, **kwargs):
         pass
 
+    def save_tensorboard_graph(self):
+        self.writer.add_graph(self.session.graph)
+        return self.writer.get_logdir()
 
 
 

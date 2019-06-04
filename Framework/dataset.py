@@ -1,25 +1,28 @@
 from abc import abstractmethod
 import numpy as np
+from Framework.mini_batch import random_index
+
 class Dataset:
-    def __init__(self, shape, x_path, y_path):
-        self.train_x = np.load(x_path)
-        self.train_y = np.load(y_path)
-        self.train_x = self.train_x.reshape(shape=shape)
-        self.train_set = np.zeros(self.train_x.shape[0], dtype=[
-            ('x', np.float32, (shape[1:])),
-            ('y', np.int32, ())  # We will be using -1 for unlabeled
-        ])
-        self.train_set['x'] = self.train_x
-        self.train_set['y'] = self.train_y
-        del self.train_x, self.train_y
+    def __init__(self,  **kwargs):
+        self.train_set = None
+        self.eval_set = None
         self.test_set = None
-    @abstractmethod
-    def process_labels(self, **kwargs):
-        pass
 
-    @abstractmethod
-    def split_dataset(self, **kwargs):
-        pass
+    def evaluation_generator(self, batch_size=100):
+        print(len(self.eval_set))
 
-    def return_dataset(self):
-        return self.train_set, self.test_set
+        def generate():
+            for idx in range(0, len(self.eval_set), batch_size):
+                print(idx)
+                yield self.eval_set[idx:(idx + batch_size)]
+
+        return generate
+
+    def training_generator(self, batch_size=100, random=np.random):
+        assert batch_size > 0 and len(self.train_set) > 0
+        for batch_idxs in random_index(len(self.train_set), batch_size, random):
+            yield self.train_set[batch_idxs]
+
+
+
+
