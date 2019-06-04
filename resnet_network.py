@@ -53,7 +53,7 @@ class Resnet(Network):
                         if output_stride % 4 != 0:
                             raise ValueError('The output_stride needs to be a multiple of 4.')
                         output_stride /= 4
-                    net = tf.layers.conv1d(inputs=net, filters=32, kernel_size=7, strides=1, name='conv1')
+                    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=7, strides=1, name='conv1')
 
                 net = stack_blocks_dense(net, blocks, output_stride)
                 net = tf.layers.batch_normalization(inputs=net, training=is_training, momentum=0.999)
@@ -94,25 +94,22 @@ class Resnet(Network):
         def bottleneck(inputs, depth, depth_bottleneck, stride, scope=None):
             with tf.variable_scope(scope, 'bottleneck', [inputs]) as sc:
                 depth_in = inputs.shape.dims[-1].value
-                # preact = slim.batch_norm(inputs, activation_fn=tf.nn.relu, scope='preact',trainable=True,)
                 preact = tf.layers.batch_normalization(inputs=inputs, training=is_training, momentum=0.999)
                 preact = tf.nn.leaky_relu(preact)
-                # preact = tf.nn.batch_normalization(inputs,scope = 'batch_norm',training =True)
-                # preact = tf.nn.relu(preact,name='act')
 
                 if depth == depth_in:
                     shortcut = subsample(inputs, stride)
                 else:
-                    shortcut = tf.layers.conv1d(inputs=preact, filters=depth, kernel_size=1, strides=stride,
+                    shortcut = tf.layers.conv2d(inputs=preact, filters=depth, kernel_size=1, strides=stride,
                                                 activation=None,
                                                 name='shortcut')
 
-                residual = tf.layers.conv1d(inputs=preact, filters=depth_bottleneck, kernel_size=1, strides=1,
+                residual = tf.layers.conv2d(inputs=preact, filters=depth_bottleneck, kernel_size=1, strides=1,
                                             name='conv1')
-                residual = tf.layers.conv1d(inputs=residual, filters=depth_bottleneck, kernel_size=3, strides=stride,
+                residual = tf.layers.conv2d(inputs=residual, filters=depth_bottleneck, kernel_size=3, strides=stride,
                                             padding='SAME', name='conv2')
                 # residual = subsample(residual, factor=stride)
-                residual = tf.layers.conv1d(inputs=residual, filters=depth, kernel_size=1, strides=1,
+                residual = tf.layers.conv2d(inputs=residual, filters=depth, kernel_size=1, strides=1,
                                             activation=None,
                                             name='conv3')
 
@@ -123,7 +120,7 @@ class Resnet(Network):
             if factor == 1:
                 return inputs
             else:
-                return tf.layers.max_pooling1d(inputs, 1, strides=factor)
+                return tf.layers.max_pooling2d(inputs, 1, strides=factor)
 
         logits = resnet_43(inputs, num_classes, reuse, scope)
         return logits
