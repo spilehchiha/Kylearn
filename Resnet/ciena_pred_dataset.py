@@ -15,7 +15,7 @@ class pred_Dataset(Dataset):
         self.train_set['y'] = np.load(y_path)
 
         pos_sample = self.train_set[self.train_set['y'] == 1]
-        neg_sample = self.train_set[~pos_sample]
+        neg_sample = self.train_set[self.train_set['y'] == 0]
 
         _, neg_sample = train_test_split(neg_sample, test_size=pos_sample.shape[0], random_state=42)
         self.train_set, self.test_set = train_test_split(np.concatenate([pos_sample, neg_sample]), test_size=0.2,

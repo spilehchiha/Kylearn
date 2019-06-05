@@ -1,4 +1,4 @@
-from .Framework.network import Network
+from Framework.network import Network
 import tensorflow as tf
 import collections
 
@@ -21,7 +21,7 @@ class Resnet(Network):
                 resnet_block('block3', base_depth=128, num_units=4, stride=2),
                 resnet_block('block4', base_depth=256, num_units=4, stride=1),
             ]
-            return resnet(inputs, num_classes, blocks,
+            return resnet(inputs =inputs, num_classes = num_classes, blocks = blocks,
                           global_pool=global_pool, output_stride=output_stride,
                           include_root_block=True,
                           reuse=reuse, scope=scope)
@@ -53,7 +53,7 @@ class Resnet(Network):
                         if output_stride % 4 != 0:
                             raise ValueError('The output_stride needs to be a multiple of 4.')
                         output_stride /= 4
-                    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=7, strides=1, name='conv1')
+                    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=3, strides=1, name='conv1', padding='same')
 
                 net = stack_blocks_dense(net, blocks, output_stride)
                 net = tf.layers.batch_normalization(inputs=net, training=is_training, momentum=0.999)
@@ -91,7 +91,7 @@ class Resnet(Network):
 
             return net
 
-        def bottleneck(inputs, depth, depth_bottleneck, stride, scope=None):
+        def bottleneck(inputs, depth, depth_bottleneck, stride,rate=None, scope=None):
             with tf.variable_scope(scope, 'bottleneck', [inputs]) as sc:
                 depth_in = inputs.shape.dims[-1].value
                 preact = tf.layers.batch_normalization(inputs=inputs, training=is_training, momentum=0.999)
@@ -122,5 +122,5 @@ class Resnet(Network):
             else:
                 return tf.layers.max_pooling2d(inputs, 1, strides=factor)
 
-        logits = resnet_43(inputs, num_classes, reuse, scope)
+        logits = resnet_43(inputs=inputs, num_classes=num_classes, reuse=reuse, scope=scope)
         return logits

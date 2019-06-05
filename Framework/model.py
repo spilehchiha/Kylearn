@@ -46,6 +46,12 @@ class Model():
         self.writer.add_graph(self.session.graph)
         return self.writer.get_logdir()
 
+    def restore_checkpoint(self, number):
+        self.saver.restore(self.session, self.checkpoint_path+'-%s'%str(number))
+
+
+
+
 
 
 

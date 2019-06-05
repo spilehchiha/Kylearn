@@ -20,13 +20,15 @@ class ResnetModel(Model):
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None, 3, 86, 1], name='input_x')
-            self.input_y = tf.placeholder(tf.float32, [None, 2], name='alarm')
+            self.input_y = tf.placeholder(tf.float32, [None], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
 
         net = self.classifier(network, self.input_x, num_classes=num_classes, scope='classification',
                               is_training=self.is_training)
         self.logits = tf.nn.softmax(net)
-        self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.logits, labels=self.input_y)
+        self.input_y = tf.cast(self.input_y, tf.int64)
+        self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.input_y)
+        self.loss = tf.reduce_mean(self.loss)
         self.error = self.errors(self.logits, self.input_y)
         self.train_op = None
         self.best_loss = 1000
@@ -46,6 +48,7 @@ class ResnetModel(Model):
             order=["error", "loss"],
             default_format='{name}: {value:>10.6f}',
             separator=",  ")
+        self.result_formatter.add_format('error', '{name}: {value:>6.1%}')
 
     def classifier(self, network, input, num_classes, scope, is_training):
 
@@ -58,13 +61,17 @@ class ResnetModel(Model):
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        self.initialize_variables()
+
         merged = tf.summary.merge_all()
         LOG.info("Model variables initialized")
         for batch in dataset.training_generator(batch_size=self.batch_size):
-            merge, i, results, _ = self.session.run([merged, self.global_step, self.training_metrics, self.train_op],
+            results, _ = self.session.run([self.training_metrics, self.train_op],
                                                     feed_dict={self.input_x: batch['x'],
-                                                               self.input_y: batch['y']})
-            self.writer.add_summary(merge, i)
+                                                               self.input_y: batch['y'],
+                                                               self.is_training: True})
+            i = self.session.run([self.global_step])
+            # self.writer.add_summary(merge, i)
             step_control = self.session.run(self.training_control)
             if step_control['time_to_print']:
                 LOG.info("step %5d:   %s", step_control['step'], self.result_formatter.format_dict(results))
@@ -81,7 +88,8 @@ class ResnetModel(Model):
 
         step, results = self.session.run([self.global_step, self.evaluate_metrics],
                                          feed_dict={self.input_x: eval_data['x'],
-                                                    self.input_y: eval_data['y']})
+                                                    self.input_y: eval_data['y'],
+                                                    self.is_training: False})
         '''early stoping'''
         loss = results["eval/loss"]
         if loss <= self.best_loss:
@@ -109,3 +117,17 @@ class ResnetModel(Model):
     def save_checkpoint(self):
         path = self.saver.save(self.session, self.checkpoint_path, global_step=self.global_step)
         LOG.info("Saved checkpoint: %r", path)
+
+    def plot(self, dataset, checkpoint):
+        self.restore_checkpoint(checkpoint)
+        result1, result2, result3 = self.session.run([self.logits], feed_dict={self.input_x: dataset.test_set['x'],
+                                                    self.input_y: dataset.test_set['y'],
+                                                    self.is_training: False})
+        result = np.argmax(result1, axis=1)
+        result = result.reshape([-1, 1])
+        cm = cm_metrix(test_y, result)
+
+        cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
+
+        acc = accuracy_score(test_y, result)
+        print(classification_report(test_y, result))
