@@ -91,3 +91,51 @@ INFO:train_log:step   660:   train/error:  49.0%,  train/loss:   0.803262
 INFO:train_log:step   660:   eval/error:  49.3%,  eval/loss:   0.806620
 INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-660'
 INFO:train_log:Stop Training
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60

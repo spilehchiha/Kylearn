@@ -10,9 +10,11 @@ dataset = pred_Dataset([309086, 3, 86, 1],
 network = Resnet()
 model = ResnetModel(ckpt_path='/home/oem/Projects/Kylearn/ciena/models',tsboard_path='logs',
                     network=network, num_classes=2)
-model.save_tensorboard_graph()
+
+# model.save_tensorboard_graph()
 
 # get_variable_num()
 
-model.train(dataset,lr=0.002)
-model.plot()
+# model.train(dataset,lr=0.002)
+model.initialize_variables()
+model.plot(dataset, 60)

@@ -1,8 +1,9 @@
-import functools
+import numpy as np
 import tensorflow as tf
 from Framework import utils
 from Framework.model import Model
 from Framework.string_utils import DictFormatter
+from Toolkit.draw import *
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='train_log', filemode='a')
@@ -120,14 +121,14 @@ class ResnetModel(Model):
 
     def plot(self, dataset, checkpoint):
         self.restore_checkpoint(checkpoint)
-        result1, result2, result3 = self.session.run([self.logits], feed_dict={self.input_x: dataset.test_set['x'],
-                                                    self.input_y: dataset.test_set['y'],
-                                                    self.is_training: False})
-        result = np.argmax(result1, axis=1)
-        result = result.reshape([-1, 1])
-        cm = cm_metrix(test_y, result)
+        results= self.session.run([self.logits],feed_dict={
+                                                                self.input_x: dataset.test_set['x'],
+                                                                # self.input_y: dataset.test_set['y'],
+                                                                self.is_training: False})
+
+        print(dataset.test_set['y'].shape)
+        results = np.squeeze(np.argmax(results, axis=-1))
+        print(results.shape)
+        cm = cm_metrix(dataset.test_set['y'], results)
 
         cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
-
-        acc = accuracy_score(test_y, result)
-        print(classification_report(test_y, result))
