@@ -9,7 +9,7 @@ dataset = pred_Dataset(
 network = Resnet()
 
 model = ResnetModel(ckpt_path='/home/oem/Projects/Kylearn/examples/ciena/models/%s_pred'%device_type,tsboard_path='logs',
-                    network=network, num_classes=1, input_shape=list(dataset.shape[1:]), lr=0.002)
+                    network=network, num_classes=1, input_shape=list(dataset.shape[1:]), lr=0.002, batch_size=500)
 
 model.save_tensorboard_graph()
 
@@ -17,4 +17,4 @@ model.initialize_variables()
 model.train(dataset,0.002)
 
 # model.restore_checkpoint(9090)
-# model.plot(dataset, threshold=0.6)
+model.plot(dataset, threshold=0.6)
