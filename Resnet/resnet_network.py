@@ -53,7 +53,7 @@ class Resnet(Network):
                         if output_stride % 4 != 0:
                             raise ValueError('The output_stride needs to be a multiple of 4.')
                         output_stride /= 4
-                    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=3, strides=1, name='conv1', padding='same')
+                    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=1, strides=1, name='conv1', padding='same')
 
                 net = stack_blocks_dense(net, blocks, output_stride)
                 net = tf.layers.batch_normalization(inputs=net, training=is_training, momentum=0.999)

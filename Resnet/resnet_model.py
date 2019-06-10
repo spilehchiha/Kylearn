@@ -26,10 +26,10 @@ class ResnetModel(Model):
 
         net = self.classifier(network, self.input_x, num_classes=num_classes, scope='classification',
                               is_training=self.is_training)
-        self.logits = tf.nn.softmax(net)
-        self.input_y = tf.cast(self.input_y, tf.int64)
-        self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.input_y)
-        self.loss = tf.reduce_mean(self.loss)
+        net = tf.layers.batch_normalization(inputs=net, training=self.is_training, momentum=0.999)
+        self.logits = tf.nn.tanh(net)
+        self.loss = tf.losses.huber_loss(self.input_y, self.logits)
+        self.loss = tf.reduce_sum(self.loss)
         self.error = self.errors(self.logits, self.input_y)
         self.train_op = None
         self.best_loss = 1000
