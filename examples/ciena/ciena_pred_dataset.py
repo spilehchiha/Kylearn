@@ -1,18 +1,23 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from Framework.dataset import Dataset
+from framework.dataset import Dataset
 
 
 class pred_Dataset(Dataset):
-    def __init__(self, shape, x_path, y_path):
+    def __init__(self, x_path, y_path):
         super().__init__()
-        self.train_set = np.zeros(shape[0], dtype=[
-            ('x', np.float32, (shape[1:])),
-            ('y', np.int32, ())
+
+        x = np.load(x_path)
+        self.shape = x.shape
+
+        self.train_set = np.zeros(self.shape[0], dtype=[
+            ('x', np.float32, (self.shape[1:])),
+            ('y', np.int32, (1))
         ])
-        self.train_set['x'] = np.load(x_path).reshape(shape)
-        self.train_set['y'] = np.load(y_path)
+        self.train_set['x'] = x
+        self.train_set['y'] = np.load(y_path).flatten()
+
 
         pos_sample = self.train_set[self.train_set['y'] == 1]
         neg_sample = self.train_set[self.train_set['y'] == 0]

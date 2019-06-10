@@ -1,4 +1,4 @@
-from mt_model import Mt_model
+from examples.mt_model import Mt_model
 from resnet import Resnet
 
 network = Resnet()

@@ -1,141 +1,16 @@
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:57: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
 Instructions for updating:
 keep_dims is deprecated, use keepdims instead
 INFO:train_log:Model variables initialized
-INFO:train_log:step    10:   train/error:  51.0%,  train/loss:   0.823261
-INFO:train_log:step    20:   train/error:  54.0%,  train/loss:   0.853260
-INFO:train_log:step    30:   train/error:  49.0%,  train/loss:   0.803262
-INFO:train_log:step    40:   train/error:  55.0%,  train/loss:   0.863260
-INFO:train_log:step    50:   train/error:  58.0%,  train/loss:   0.893261
-INFO:train_log:step    60:   train/error:  64.0%,  train/loss:   0.954454
-INFO:train_log:step    60:   eval/error:  48.2%,  eval/loss:   0.795235
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-60'
-INFO:train_log:step    70:   train/error:  53.0%,  train/loss:   0.843266
-INFO:train_log:step    80:   train/error:  45.0%,  train/loss:   0.762322
-INFO:train_log:step    90:   train/error:  59.0%,  train/loss:   0.903262
-INFO:train_log:step   100:   train/error:  51.0%,  train/loss:   0.823261
-INFO:train_log:step   110:   train/error:  53.0%,  train/loss:   0.843261
-INFO:train_log:step   120:   train/error:  56.0%,  train/loss:   0.873262
-INFO:train_log:step   120:   eval/error:  52.4%,  eval/loss:   0.836981
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-120'
-INFO:train_log:step   130:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   140:   train/error:  53.0%,  train/loss:   0.844174
-INFO:train_log:step   150:   train/error:  58.0%,  train/loss:   0.893262
-INFO:train_log:step   160:   train/error:  50.0%,  train/loss:   0.813262
-INFO:train_log:step   170:   train/error:  58.0%,  train/loss:   0.893262
-INFO:train_log:step   180:   train/error:  60.0%,  train/loss:   0.913262
-INFO:train_log:step   180:   eval/error:  52.6%,  eval/loss:   0.838878
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-180'
-INFO:train_log:step   190:   train/error:  53.0%,  train/loss:   0.843245
-INFO:train_log:step   200:   train/error:  50.0%,  train/loss:   0.813262
-INFO:train_log:step   210:   train/error:  63.0%,  train/loss:   0.943262
-INFO:train_log:step   220:   train/error:  45.0%,  train/loss:   0.763262
-INFO:train_log:step   230:   train/error:  56.0%,  train/loss:   0.873262
-INFO:train_log:step   240:   train/error:  58.0%,  train/loss:   0.893262
-INFO:train_log:step   240:   eval/error:  52.6%,  eval/loss:   0.838878
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-240'
-INFO:train_log:step   250:   train/error:  54.0%,  train/loss:   0.853262
-INFO:train_log:step   260:   train/error:  52.0%,  train/loss:   0.833262
-INFO:train_log:step   270:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   280:   train/error:  52.0%,  train/loss:   0.833262
-INFO:train_log:step   290:   train/error:  60.0%,  train/loss:   0.913262
-INFO:train_log:step   300:   train/error:  56.0%,  train/loss:   0.873262
-INFO:train_log:step   300:   eval/error:  52.2%,  eval/loss:   0.835083
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-300'
-INFO:train_log:step   310:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   320:   train/error:  54.0%,  train/loss:   0.853261
-INFO:train_log:step   330:   train/error:  39.0%,  train/loss:   0.703261
-INFO:train_log:step   340:   train/error:  50.0%,  train/loss:   0.813262
-INFO:train_log:step   350:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   360:   train/error:  49.0%,  train/loss:   0.803262
-INFO:train_log:step   360:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-360'
-INFO:train_log:step   370:   train/error:  52.0%,  train/loss:   0.833262
-INFO:train_log:step   380:   train/error:  51.0%,  train/loss:   0.823262
-INFO:train_log:step   390:   train/error:  51.0%,  train/loss:   0.823262
-INFO:train_log:step   400:   train/error:  60.0%,  train/loss:   0.913262
-INFO:train_log:step   410:   train/error:  51.0%,  train/loss:   0.823262
-INFO:train_log:step   420:   train/error:  46.0%,  train/loss:   0.773262
-INFO:train_log:step   420:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-420'
-INFO:train_log:step   430:   train/error:  58.0%,  train/loss:   0.893262
-INFO:train_log:step   440:   train/error:  56.0%,  train/loss:   0.873262
-INFO:train_log:step   450:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   460:   train/error:  50.0%,  train/loss:   0.813262
-INFO:train_log:step   470:   train/error:  55.0%,  train/loss:   0.863262
-INFO:train_log:step   480:   train/error:  54.0%,  train/loss:   0.853262
-INFO:train_log:step   480:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-480'
-INFO:train_log:step   490:   train/error:  47.0%,  train/loss:   0.783262
-INFO:train_log:step   500:   train/error:  56.0%,  train/loss:   0.873262
-INFO:train_log:step   510:   train/error:  54.0%,  train/loss:   0.853262
-INFO:train_log:step   520:   train/error:  46.0%,  train/loss:   0.773262
-INFO:train_log:step   530:   train/error:  42.0%,  train/loss:   0.733262
-INFO:train_log:step   540:   train/error:  46.0%,  train/loss:   0.773262
-INFO:train_log:step   540:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-540'
-INFO:train_log:step   550:   train/error:  49.0%,  train/loss:   0.803262
-INFO:train_log:step   560:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   570:   train/error:  54.0%,  train/loss:   0.853262
-INFO:train_log:step   580:   train/error:  54.0%,  train/loss:   0.853262
-INFO:train_log:step   590:   train/error:  39.0%,  train/loss:   0.703262
-INFO:train_log:step   600:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   600:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-600'
-INFO:train_log:step   610:   train/error:  43.0%,  train/loss:   0.743262
-INFO:train_log:step   620:   train/error:  57.0%,  train/loss:   0.883262
-INFO:train_log:step   630:   train/error:  43.0%,  train/loss:   0.743262
-INFO:train_log:step   640:   train/error:  53.0%,  train/loss:   0.843262
-INFO:train_log:step   650:   train/error:  50.0%,  train/loss:   0.813262
-INFO:train_log:step   660:   train/error:  49.0%,  train/loss:   0.803262
-INFO:train_log:step   660:   eval/error:  49.3%,  eval/loss:   0.806620
-INFO:train_log:Saved checkpoint: '/home/oem/Projects/Kylearn/ciena/models-660'
-INFO:train_log:Stop Training
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:57: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
 Instructions for updating:
 keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+INFO:train_log:Model variables initialized
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:57: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
 Instructions for updating:
 keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+INFO:train_log:Model variables initialized
+WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:57: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
 Instructions for updating:
 keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
-WARNING:tensorflow:From /home/oem/Projects/Kylearn/Resnet/resnet_network.py:63: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
-Instructions for updating:
-keep_dims is deprecated, use keepdims instead
-INFO:tensorflow:Restoring parameters from /home/oem/Projects/Kylearn/ciena/models-60
+INFO:train_log:Model variables initialized
