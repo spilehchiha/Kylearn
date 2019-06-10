@@ -8,23 +8,23 @@ import collections
 
 class ResnetModel(Model):
 
-    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, lr):
+    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, lr, batch_size):
         super().__init__(ckpt_path, tsboard_path)
 
-        self.batch_size = 50
+        self.batch_size = batch_size
         self.patience = 0
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
             self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
-
-        net = self.classifier(network, self.input_x, num_classes=num_classes,
-                              is_training=self.is_training)
-        net = tf.layers.batch_normalization(inputs=net, training=self.is_training, momentum=0.999)
-        self.logits = tf.nn.sigmoid(net)
-        self.loss = tf.losses.huber_loss(self.input_y, self.logits)
-        self.loss = tf.reduce_sum(self.loss)
+        with tf.variable_scope('regressor'):
+            net = self.classifier(network, self.input_x, num_classes=num_classes,
+                                  is_training=self.is_training)
+            net = tf.layers.batch_normalization(inputs=net, training=self.is_training, momentum=0.999)
+            self.logits = tf.nn.sigmoid(net)
+            self.loss = tf.losses.huber_loss(self.input_y, self.logits)
+            self.loss = tf.reduce_sum(self.loss)
 
         self.best_loss = 1000
 
@@ -37,7 +37,10 @@ class ResnetModel(Model):
 
     def initialize_variables(self, **kwargs):
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-        self.session.run(init_op)
+        self.run(init_op)
+
+    def run(self, *args, **kwargs):
+        return self.session.run(*args, **kwargs)
 
     def train(self, dataset, lr):
         self.training_control = utils.training_control(self.global_step, print_span=10,
@@ -46,11 +49,11 @@ class ResnetModel(Model):
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
             y = batch['y'].reshape([-1,1])
-            results, loss, _ = self.session.run([self.logits, self.loss, self.train_op],
+            results, loss, _ = self.run([self.logits, self.loss, self.train_op],
                                                     feed_dict={self.input_x: batch['x'],
                                                                self.input_y: y,
                                                                self.is_training: True})
-            step_control = self.session.run(self.training_control)
+            step_control = self.run(self.training_control)
             if step_control['time_to_print']:
                print('train_loss= ' + str(loss) + '          round' + str(step_control['step']))
             if step_control['time_to_stop']:
@@ -63,7 +66,7 @@ class ResnetModel(Model):
 
     def evaluate(self, eval_data):
         y = eval_data['y'].reshape([-1,1])
-        step, results = self.session.run([self.global_step, self.loss],
+        step, results = self.run([self.global_step, self.loss],
                                          feed_dict={self.input_x: eval_data['x'],
                                                     self.input_y: y,
                                                     self.is_training: False})
@@ -84,23 +87,23 @@ class ResnetModel(Model):
 
         return stop_training
 
-    def errors(self, logits, labels):
-        logits[logits >= 0.5] = 1
-        logits[logits < 0.5] = 0
-        labels = tf.cast(labels, tf.int64)
-        per_sample = tf.to_float(tf.not_equal(logits, labels))
-        mean = tf.reduce_mean(per_sample)
-        return mean
+    # def errors(self, logits, labels):
+    #     logits[logits >= 0.5] = 1
+    #     logits[logits < 0.5] = 0
+    #     labels = tf.cast(labels, tf.int64)
+    #     per_sample = tf.to_float(tf.not_equal(logits, labels))
+    #     mean = tf.reduce_mean(per_sample)
+    #     return mean
 
     def plot(self, dataset, threshold=0.5):
-        results= self.session.run([self.logits],feed_dict={
+        results= self.run([self.logits],feed_dict={
                                                                 self.input_x: dataset.test_set['x'],
                                                                 # self.input_y: dataset.test_set['y'],
                                                                 self.is_training: False})
 
         print(dataset.test_set['y'].shape)
         results = np.array(results).squeeze()
-
+        print(results)
         results[results >= threshold] = 1
         results[results < threshold] = 0
 
