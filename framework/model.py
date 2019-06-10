@@ -38,9 +38,8 @@ class Model():
     def evaluate(self, **kwargs):
         pass
 
-    @abstractmethod
-    def save_checkpoint(self, **kwargs):
-        pass
+    def save_checkpoint(self):
+        self.saver.save(self.session, self.checkpoint_path, global_step=self.global_step)
 
     def save_tensorboard_graph(self):
         self.writer.add_graph(self.session.graph)
