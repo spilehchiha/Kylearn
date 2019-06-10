@@ -1,6 +1,6 @@
 import functools
 import tensorflow as tf
-from Framework import utils
+from utils import utils
 import logging
 logging.basicConfig(level=logging.INFO, filename= 'train_log',filemode='a')
 LOG = logging.getLogger('train_log')

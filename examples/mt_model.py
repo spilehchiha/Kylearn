@@ -1,4 +1,4 @@
-from Framework.model import Model
+from framework.model import Model
 import tensorflow as tf
 class Mt_model(Model):
 
