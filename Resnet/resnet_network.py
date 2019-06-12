@@ -56,9 +56,9 @@ class Resnet(Network):
             if global_pool:
                 net = tf.reduce_mean(net, 1, name='pool5', keep_dims=True)
 
-            with tf.variable_scope('classifier'):
-                net = tf.layers.flatten(net)
-                logits = tf.layers.dense(inputs=net, units=num_classes)
+
+            net = tf.layers.flatten(net)
+            logits = tf.layers.dense(inputs=net, units=num_classes)
             return logits
 
         def stack_blocks_dense(net, blocks, output_stride=None):

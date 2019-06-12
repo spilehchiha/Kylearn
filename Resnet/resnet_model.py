@@ -16,15 +16,13 @@ class ResnetModel(Model):
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
-            self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
+            self.input_y = tf.placeholder(tf.float32, [None], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
         with tf.variable_scope('regressor'):
             net = self.classifier(network, self.input_x, num_classes=num_classes,
                                   is_training=self.is_training)
-            net = tf.layers.batch_normalization(inputs=net, training=self.is_training, momentum=0.999)
-            self.logits = tf.nn.sigmoid(net)
-            self.loss = tf.losses.huber_loss(self.input_y, self.logits)
-            self.loss = tf.reduce_sum(self.loss)
+            self.logits = net
+            self.loss = tf.losses.mean_squared_error(tf.expand_dims(self.input_y, axis=1), self.logits)
 
         self.best_loss = 1000
 
@@ -48,10 +46,10 @@ class ResnetModel(Model):
                                                        max_step=10000)  # batch*evaluation_span = dataset size = one epoch
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
-            y = batch['y'].reshape([-1,1])
+
             results, loss, _ = self.run([self.logits, self.loss, self.train_op],
                                                     feed_dict={self.input_x: batch['x'],
-                                                               self.input_y: y,
+                                                               self.input_y: batch['y'],
                                                                self.is_training: True})
             step_control = self.run(self.training_control)
             if step_control['time_to_print']:
@@ -65,15 +63,14 @@ class ResnetModel(Model):
                     break
 
     def evaluate(self, eval_data):
-        y = eval_data['y'].reshape([-1,1])
         step, results = self.run([self.global_step, self.loss],
                                          feed_dict={self.input_x: eval_data['x'],
-                                                    self.input_y: y,
+                                                    self.input_y: eval_data['y'],
                                                     self.is_training: False})
         print(' val_loss = ' + str(results) + '          round: ' + str(step))
         '''early stoping'''
         loss = results
-        if loss <= self.best_loss:
+        if loss < self.best_loss:
             self.best_loss = loss
             self.patience = 0
         else:
