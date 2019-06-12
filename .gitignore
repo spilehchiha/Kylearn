@@ -5,3 +5,4 @@ __pycache__/
 #ide files
 .idea/
 .DS_Store
+events*
