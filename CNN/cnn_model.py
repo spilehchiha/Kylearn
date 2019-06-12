@@ -20,12 +20,14 @@ class CNNModel(Model):
         with tf.variable_scope('regressor'):
             net = self.classifier(network, self.input_x, num_classes=num_classes)
             self.logits = net
-            self.loss = tf.reduce_mean(tf.square(self.input_y - self.logits))
+            self.loss = tf.reduce_sum(tf.square(self.input_y - self.logits))
 
         self.best_loss = 1000
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        self.saver = tf.train.Saver(max_to_keep=11)
+        self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes):
 
@@ -55,7 +57,7 @@ class CNNModel(Model):
             if step_control['time_to_stop']:
                 break
             if step_control['time_to_evaluate']:
-                if_stop = self.evaluate(dataset.eval_set)
+                if_stop = self.evaluate(dataset.val_set)
                 self.save_checkpoint()
                 if if_stop:
                     break
@@ -81,12 +83,9 @@ class CNNModel(Model):
 
 
         return stop_training
-
     def plot(self, dataset, threshold=0.5):
         results= self.run([self.logits],feed_dict={
-                                                                self.input_x: dataset.test_set['x']
-                                                                # self.input_y: dataset.test_set['y'],
-                                                                })
+                                                                self.input_x: dataset.test_set['x']})
 
         print(dataset.test_set['y'].shape)
         results = np.array(results).squeeze()
@@ -97,3 +96,5 @@ class CNNModel(Model):
         cm = cm_metrix(dataset.test_set['y'], results)
 
         cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
+
+

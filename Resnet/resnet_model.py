@@ -16,18 +16,20 @@ class ResnetModel(Model):
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
-            self.input_y = tf.placeholder(tf.float32, [None], name='alarm')
+            self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
         with tf.variable_scope('regressor'):
             net = self.classifier(network, self.input_x, num_classes=num_classes,
                                   is_training=self.is_training)
             self.logits = net
-            self.loss = tf.losses.mean_squared_error(tf.expand_dims(self.input_y, axis=1), self.logits)
+            self.loss = tf.losses.mean_squared_error(self.input_y, self.logits)
 
-        self.best_loss = 1000
+        self.best_loss = 1000000000
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        self.saver = tf.train.Saver(max_to_keep=11)
+        self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes, is_training):
 
@@ -57,15 +59,15 @@ class ResnetModel(Model):
             if step_control['time_to_stop']:
                 break
             if step_control['time_to_evaluate']:
-                if_stop = self.evaluate(dataset.eval_set)
+                if_stop = self.evaluate(dataset.val_set)
                 self.save_checkpoint()
                 if if_stop:
                     break
 
-    def evaluate(self, eval_data):
+    def evaluate(self, val_data):
         step, results = self.run([self.global_step, self.loss],
-                                         feed_dict={self.input_x: eval_data['x'],
-                                                    self.input_y: eval_data['y'],
+                                         feed_dict={self.input_x: val_data['x'],
+                                                    self.input_y: val_data['y'],
                                                     self.is_training: False})
         print(' val_loss = ' + str(results) + '          round: ' + str(step))
         '''early stoping'''

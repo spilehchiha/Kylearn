@@ -63,6 +63,8 @@ class pred_Dataset_2(Dataset):
 
         X = np.load(x_path)
         y = np.load(y_path)
+        print(collections.Counter(y.flatten()))
+        X = np.nan_to_num(X)
         X, y = random_upsampling(X, y)
         self.train_set = np.zeros(X.shape[0], dtype=[
             ('x', np.float32, (X.shape[1:])),

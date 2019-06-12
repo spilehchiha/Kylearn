@@ -9,8 +9,11 @@ class Model():
         self.tensorboard_path = tsboard_path
         self.session = tf.Session()
         self.global_step = tf.train.get_or_create_global_step()
-        self.saver = tf.train.Saver(max_to_keep=11)
-        self.writer = tf.summary.FileWriter(self.tensorboard_path)
+        # self.saver = tf.train.Saver(max_to_keep=11)
+        # self.writer = tf.summary.FileWriter(self.tensorboard_path)
+
+        self.saver = None  # saver should define after creating the graph
+        self.writer = None
 
 
     @abstractmethod

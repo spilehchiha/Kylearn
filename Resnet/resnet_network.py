@@ -58,7 +58,9 @@ class Resnet(Network):
 
 
             net = tf.layers.flatten(net)
-            logits = tf.layers.dense(inputs=net, units=num_classes)
+            net = tf.layers.dense(inputs=net, units=num_classes)
+            logits = tf.nn.sigmoid(net)
+
             return logits
 
         def stack_blocks_dense(net, blocks, output_stride=None):
