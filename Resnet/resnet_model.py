@@ -3,7 +3,7 @@ import tensorflow as tf
 from utils import utils
 from framework.model import Model
 from utils.string_utils import DictFormatter
-from visualization.draw_matrix import *
+
 import collections
 
 class ResnetModel(Model):
@@ -26,7 +26,7 @@ class ResnetModel(Model):
 
         self.best_loss = 1000000000
 
-        optimizer = tf.train.AdamOptimizer(learning_rate=lr)
+        optimizer = tf.train.RMSPropOptimizer(learning_rate=lr)
         self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
         self.saver = tf.train.Saver(max_to_keep=11)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
@@ -43,6 +43,7 @@ class ResnetModel(Model):
         return self.session.run(*args, **kwargs)
 
     def train(self, dataset, lr):
+        self.initialize_variables()
         self.training_control = utils.training_control(self.global_step, print_span=10,
                                                        evaluation_span=round(dataset.train_set.shape[0]/self.batch_size),
                                                        max_step=10000)  # batch*evaluation_span = dataset size = one epoch
@@ -94,18 +95,8 @@ class ResnetModel(Model):
     #     mean = tf.reduce_mean(per_sample)
     #     return mean
 
-    def plot(self, dataset, threshold=0.5):
+    def predict_proba(self, dataset):
         results= self.run([self.logits],feed_dict={
                                                                 self.input_x: dataset.test_set['x'],
-                                                                # self.input_y: dataset.test_set['y'],
                                                                 self.is_training: False})
-
-        print(dataset.test_set['y'].shape)
-        results = np.array(results).squeeze()
-        print(results)
-        results[results >= threshold] = 1
-        results[results < threshold] = 0
-
-        cm = cm_metrix(dataset.test_set['y'], results)
-
-        cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
+        return results
