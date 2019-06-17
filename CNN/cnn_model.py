@@ -18,9 +18,9 @@ class CNNModel(Model):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
             self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
         with tf.variable_scope('regressor'):
-            net = self.classifier(network, self.input_x, num_classes=num_classes)
-            self.logits = net
-            self.loss = tf.reduce_sum(tf.square(self.input_y - self.logits))
+            self.logits = self.classifier(network, self.input_x, num_classes=num_classes)
+            error = self.logits - self.input_y
+            self.loss = tf.reduce_mean(tf.square(error))
 
         self.best_loss = 1000
 
