@@ -78,5 +78,7 @@ class pred_Dataset_2(Dataset):
         # pos_sample = self.train_set[self.train_set['y'] == 1]
         # neg_sample = self.train_set[self.train_set['y'] == 0]
         # pos_train, pos_test = train_test_split(pos_sample, test_size=0.4, random_state=42)
+        # self.train_set, self.test_set = train_test_split(self.train_set, test_size=0.2, random_state=21)
+        # self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=22)
         self.train_set, self.test_set = train_test_split(self.train_set, test_size=10000, random_state=21)
-        self.train_set, self.val_set = train_test_split(self.train_set,train_size=200000, test_size=5000, random_state=22)
+        self.train_set, self.val_set = train_test_split(self.train_set, test_size=5000, random_state=22)
