@@ -3,7 +3,7 @@ import tensorflow as tf
 from utils import utils
 from framework.model import Model
 from utils.string_utils import DictFormatter
-
+from visualization.draw_matrix import *
 import collections
 
 class ResnetModel(Model):
@@ -21,13 +21,23 @@ class ResnetModel(Model):
         with tf.variable_scope('regressor'):
             net = self.classifier(network, self.input_x, num_classes=num_classes,
                                   is_training=self.is_training)
-            self.logits = net
-            self.loss = tf.losses.mean_squared_error(self.input_y, self.logits)
+            self.logits = tf.nn.sigmoid(net)
+            error = self.logits - self.input_y
+            self.loss = tf.reduce_mean(tf.square(error))
 
         self.best_loss = 1000000000
 
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=lr)
-        self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        optimizer = tf.train.AdamOptimizer(learning_rate=lr)
+
+        '''when training, the moving_mean and moving_variance need to be updated. 
+        By default the update ops are placed in tf.GraphKeys.UPDATE_OPS,
+        so they need to be executed alongside the train_op.
+        Also, be sure to add any batch_normalization ops before getting the update_ops collection. 
+        Otherwise, update_ops will be empty, and training/inference will not work properly. '''
+
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        self.train_op = tf.group([train_op, update_ops])
         self.saver = tf.train.Saver(max_to_keep=11)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
@@ -43,10 +53,9 @@ class ResnetModel(Model):
         return self.session.run(*args, **kwargs)
 
     def train(self, dataset, lr):
-        self.initialize_variables()
         self.training_control = utils.training_control(self.global_step, print_span=10,
                                                        evaluation_span=round(dataset.train_set.shape[0]/self.batch_size),
-                                                       max_step=10000)  # batch*evaluation_span = dataset size = one epoch
+                                                       max_step=100000)  # batch*evaluation_span = dataset size = one epoch
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
 
@@ -87,16 +96,25 @@ class ResnetModel(Model):
 
         return stop_training
 
-    # def errors(self, logits, labels):
-    #     logits[logits >= 0.5] = 1
-    #     logits[logits < 0.5] = 0
-    #     labels = tf.cast(labels, tf.int64)
-    #     per_sample = tf.to_float(tf.not_equal(logits, labels))
-    #     mean = tf.reduce_mean(per_sample)
-    #     return mean
+    def plot(self, dataset, threshold=0.5):
+        results= self.run([self.logits],feed_dict={
+            self.input_x: dataset.test_set['x'],
+            self.is_training: False
+        })
+
+        results = np.array(results).squeeze()
+        print(results)
+        results[results >= threshold] = 1
+        results[results < threshold] = 0
+
+        cm = cm_metrix(dataset.test_set['y'], results)
+
+        cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
 
     def predict_proba(self, dataset):
         results= self.run([self.logits],feed_dict={
                                                                 self.input_x: dataset.test_set['x'],
                                                                 self.is_training: False})
+        print(collections.Counter(np.array(results).flatten()))
+
         return results

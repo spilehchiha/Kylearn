@@ -11,7 +11,7 @@ class Resnet(Network):
 
         def resnet_43(inputs,
                       num_classes,
-                      global_pool=True,
+                      global_pool=False,
                       output_stride=None):
             blocks = [
                 resnet_block('block1', base_depth=32, num_units=2, stride=2),
@@ -59,9 +59,9 @@ class Resnet(Network):
 
             net = tf.layers.flatten(net)
             net = tf.layers.dense(inputs=net, units=num_classes)
-            logits = tf.nn.sigmoid(net)
 
-            return logits
+
+            return net
 
         def stack_blocks_dense(net, blocks, output_stride=None):
             current_stride = 1
