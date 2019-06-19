@@ -19,5 +19,4 @@ class Cnn_3layers(Network):
         act3 = tf.nn.leaky_relu(bn3)
         net = tf.layers.flatten(act3)
         dense = tf.layers.dense(net, num_classes)
-        logits = tf.nn.tanh(dense)
-        return logits
+        return dense

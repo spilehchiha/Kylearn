@@ -18,7 +18,8 @@ class CNNModel(Model):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
             self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
         with tf.variable_scope('regressor'):
-            self.logits = self.classifier(network, self.input_x, num_classes=num_classes)
+            net = self.classifier(network, self.input_x, num_classes=num_classes)
+            self.logits = tf.nn.sigmoid(net)
             error = self.logits - self.input_y
             self.loss = tf.reduce_mean(tf.square(error))
 
@@ -43,7 +44,7 @@ class CNNModel(Model):
     def train(self, dataset, lr):
         self.training_control = utils.training_control(self.global_step, print_span=10,
                                                        evaluation_span=round(dataset.train_set.shape[0]/self.batch_size),
-                                                       max_step=10000)  # batch*evaluation_span = dataset size = one epoch
+                                                       max_step=10000000)  # batch*evaluation_span = dataset size = one epoch
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
 
@@ -87,9 +88,7 @@ class CNNModel(Model):
         results= self.run([self.logits],feed_dict={
                                                                 self.input_x: dataset.test_set['x']})
 
-        print(dataset.test_set['y'].shape)
         results = np.array(results).squeeze()
-        print(results)
         results[results >= threshold] = 1
         results[results < threshold] = 0
 
