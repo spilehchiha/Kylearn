@@ -2,7 +2,7 @@ from Resnet.resnet_model import ResnetModel
 from Resnet.resnet_network import Resnet
 from CNN.cnn_model import CNNModel
 from CNN.cnn_network import Cnn_3layers
-from ciena_pred_dataset import pred_Dataset_2
+from examples.ciena.ciena_pred_dataset import pred_Dataset_2
 from utils.utils import get_variable_num
 from visualization.draw_matrix import *
 import numpy as np
