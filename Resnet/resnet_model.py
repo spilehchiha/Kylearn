@@ -6,6 +6,7 @@ from utils.string_utils import DictFormatter
 from visualization.draw_matrix import *
 import collections
 
+
 class ResnetModel(Model):
 
     def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, lr, batch_size):
@@ -22,8 +23,8 @@ class ResnetModel(Model):
             net = self.classifier(network, self.input_x, num_classes=num_classes,
                                   is_training=self.is_training)
             self.logits = tf.nn.sigmoid(net)
-            error = self.logits - self.input_y
-            self.loss = tf.reduce_mean(tf.square(error))
+            self.error = self.logits - self.input_y
+            self.loss = tf.reduce_mean(tf.square(self.error))
 
         self.best_loss = 1000000000
 
@@ -54,18 +55,19 @@ class ResnetModel(Model):
 
     def train(self, dataset, lr):
         self.training_control = utils.training_control(self.global_step, print_span=10,
-                                                       evaluation_span=round(dataset.train_set.shape[0]/self.batch_size),
+                                                       evaluation_span=round(
+                                                           dataset.train_set.shape[0] / self.batch_size),
                                                        max_step=100000)  # batch*evaluation_span = dataset size = one epoch
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
 
             results, loss, _ = self.run([self.logits, self.loss, self.train_op],
-                                                    feed_dict={self.input_x: batch['x'],
-                                                               self.input_y: batch['y'],
-                                                               self.is_training: True})
+                                        feed_dict={self.input_x: batch['x'],
+                                                   self.input_y: batch['y'],
+                                                   self.is_training: True})
             step_control = self.run(self.training_control)
             if step_control['time_to_print']:
-               print('train_loss= ' + str(loss) + '          round' + str(step_control['step']))
+                print('train_loss= ' + str(loss) + '          round' + str(step_control['step']))
             if step_control['time_to_stop']:
                 break
             if step_control['time_to_evaluate']:
@@ -76,9 +78,9 @@ class ResnetModel(Model):
 
     def evaluate(self, val_data):
         step, results = self.run([self.global_step, self.loss],
-                                         feed_dict={self.input_x: val_data['x'],
-                                                    self.input_y: val_data['y'],
-                                                    self.is_training: False})
+                                 feed_dict={self.input_x: val_data['x'],
+                                            self.input_y: val_data['y'],
+                                            self.is_training: False})
         print(' val_loss = ' + str(results) + '          round: ' + str(step))
         '''early stoping'''
         loss = results
@@ -93,11 +95,10 @@ class ResnetModel(Model):
         else:
             stop_training = False
 
-
         return stop_training
 
     def plot(self, dataset, threshold=0.5):
-        results= self.run([self.logits],feed_dict={
+        results = self.run([self.logits], feed_dict={
             self.input_x: dataset.test_set['x'],
             self.is_training: False
         })
@@ -112,9 +113,9 @@ class ResnetModel(Model):
         cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
 
     def predict_proba(self, dataset):
-        results= self.run([self.logits],feed_dict={
-                                                                self.input_x: dataset.test_set['x'],
-                                                                self.is_training: False})
+        results = self.run([self.logits], feed_dict={
+            self.input_x: dataset.test_set['x'],
+            self.is_training: False})
         print(collections.Counter(np.array(results).flatten()))
 
         return results
