@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import confusion_matrix
 def fpr_metrics(cm):
     tp = cm[1, 1]
     tn = cm[0, 0]
