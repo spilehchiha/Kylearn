@@ -23,8 +23,8 @@ class AttentionModel(Model):
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
 
         with tf.name_scope('scaling_attention'):
-            w1 = tf.get_variable('attn_w1', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
-            b1 = tf.get_variable('attn_b1', [1, feature_num], trainable=True, initializer=tf.initializers.zeros)
+            w1 = tf.get_variable('attn_w', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
+            b1 = tf.get_variable('attn_b', [1, feature_num], trainable=True, initializer=tf.initializers.zeros)
             # if use more than one attentions, use tf.scan
             attn_1 = tf.matmul(self.input_dev, w1) + b1
             attn_1 = tf.nn.tanh(attn_1)
@@ -32,9 +32,9 @@ class AttentionModel(Model):
             mul_0 = tf.multiply(self.input_x, attn_1)
 
         with tf.variable_scope('bias_attention'):
-            w2 = tf.get_variable('attn_w2', [dev_num, num_classes])
-            b2 = tf.get_variable('attn_w2', [1, num_classes])
-            attn_2 = tf.matmul(self.input_x, w2) + b2
+            w2 = tf.get_variable('attn_w', [dev_num, num_classes], trainable=True, initializer=tf.initializers.random_uniform)
+            b2 = tf.get_variable('attn_b', [1, num_classes], trainable=True, initializer=tf.initializers.random_uniform)
+            attn_2 = tf.matmul(self.input_dev, w2) + b2
 
         with tf.variable_scope('regressor'):
             net = self.classifier(network, mul_0, num_classes=num_classes,
