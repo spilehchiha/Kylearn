@@ -1,0 +1,69 @@
+10 June
+Use my package to train the model, 2 problems, have trouble saving models, and the results are all 0.
+
+11 June
+Try my own framework on 2 different networks, cnn and resnet, turns out the saving problem is from the framework, and the output problem is from the network, Fuck the stupid tensorflow, may you be abandoned by users.
+
+17 June
+Get a new dataset from Alex, it has 183 PM values [15:198], 47 types of alarms in one-hot format [198:245]. 43071 devices in 568 nodes(TID). 92 meta_PEC and 10769 meta_AID, 2,077,799 rows of data.
+
+For May dataset, create predicting data for all ETH* devices 638564:3865 -> 551992:2569, OTM* 330727:634 -> 302953:280
+
+18 June
+As Alex requested, m=3 n=2, for all OTM0-4 devices focus on far_end_client_signal_fail_unplanned
+
+statistic:
+before the rule
+FACILITY	total samples		positive_samples
+OTM0      	61,583	           	135	
+OTM1      	2,130	           	3
+OTM2      	160,741	   		155
+OTM3      	120	           	9
+OTM4      	114.985	   		245
+
+after the rule
+negative sample:    326,344
+positive sample:     418
+
+Then Alex mentioned that there are duplicates in the dataset, 
+
+19 June
+
+change the fpr formula
+
+Focus on loss of signal
+
+Filter out certain alarm
+
+For ETH*
+0                 638560
+Loss Of Signal       698
+
+For OTM*
+0                 330727
+Loss Of Signal        99
+
+For OPTMON
+0                 1849845
+Loss Of Signal        198
+
+My ResnetModel class have some problem, using resnet + CNN model works fine
+
+June 26
+Solve the resnet problem, by using moving mean and moving average, these parameters should be updated
+
+next step:
+create only alarm dataset, filter out lazer far end and loss of frame
+import attention mechanism
+evaluation using dot operation Y(x) as the real label and Y'(x) as the predicted label, A(Y1,Y2) as the accuracy, acc = A(Y(X), Y(X).Y'(X))
+write report
+
+1.create dataset:
+two parts input:device type and PM values
+device type: one hot or not? PM: auto encoder
+
+
+July 3
+1. Build attention mechanism, but something was wrong about the attn_model
+2. Fixed the bug above, it's the problem of `training` in batch normalization.
+3. multi-class classification should use cross-entropy
