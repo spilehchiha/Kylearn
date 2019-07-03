@@ -19,7 +19,7 @@ class AttentionModel(Model):
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='features')
             self.input_dev = tf.placeholder(tf.float32, [None, dev_num], name='dev_type')
-            self.input_y = tf.placeholder(tf.float32, [None, 12], name='alarm')
+            self.input_y = tf.placeholder(tf.float32, [None], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
 
         with tf.name_scope('scaling_attention'):
@@ -41,6 +41,8 @@ class AttentionModel(Model):
                                   is_training=self.is_training)
             net = attn_2 + net
             self.logits = tf.nn.sigmoid(net)
+
+            self.input_y = tf.one_hot(self.input_y, num_classes)
             self.error = self.logits - self.input_y
             self.loss = tf.reduce_mean(tf.square(self.error))
 
@@ -97,6 +99,7 @@ class AttentionModel(Model):
     def evaluate(self, val_data):
         step, results = self.run([self.global_step, self.loss],
                                  feed_dict={self.input_x: val_data['x'],
+                                            self.input_dev: val_data['dev'],
                                             self.input_y: val_data['y'],
                                             self.is_training: False})
         print(' val_loss = ' + str(results) + '          round: ' + str(step))
@@ -115,7 +118,7 @@ class AttentionModel(Model):
 
         return stop_training
 
-    def plot(self, dataset, threshold=0.5):
+    def plot(self, dataset, label_list, threshold=0.5, ):
         results = self.run([self.logits], feed_dict={
             self.input_x: dataset.test_set['x'],
             self.is_training: False
@@ -128,7 +131,7 @@ class AttentionModel(Model):
 
         cm = cm_metrix(dataset.test_set['y'], results)
 
-        cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
+        cm_analysis(cm, label_list, precision=True)
 
     def predict_proba(self, dataset):
         results = self.run([self.logits], feed_dict={
