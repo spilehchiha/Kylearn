@@ -9,19 +9,37 @@ import collections
 
 class AttentionModel(Model):
 
-    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, lr, batch_size):
+    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, lr, batch_size, feature_num, dev_num,
+                 attn_num):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
         self.patience = 0
 
         with tf.variable_scope("input"):
-            self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
-            self.input_y = tf.placeholder(tf.float32, [None, 1], name='alarm')
+            self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='features')
+            self.input_dev = tf.placeholder(tf.float32, [None, dev_num], name='dev_type')
+            self.input_y = tf.placeholder(tf.float32, [None, 12], name='alarm')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
+
+        with tf.name_scope('scaling_attention'):
+            w1 = tf.get_variable('attn_w1', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
+            b1 = tf.get_variable('attn_b1', [1, feature_num], trainable=True, initializer=tf.initializers.zeros)
+            # if use more than one attentions, use tf.scan
+            attn_1 = tf.matmul(self.input_dev, w1) + b1
+            attn_1 = tf.nn.tanh(attn_1)
+            attn_1 = tf.expand_dims(attn_1, axis=-1)
+            mul_0 = tf.multiply(self.input_x, attn_1)
+
+        with tf.variable_scope('bias_attention'):
+            w2 = tf.get_variable('attn_w2', [dev_num, num_classes])
+            b2 = tf.get_variable('attn_w2', [1, num_classes])
+            attn_2 = tf.matmul(self.input_x, w2) + b2
+
         with tf.variable_scope('regressor'):
-            net = self.classifier(network, self.input_x, num_classes=num_classes,
+            net = self.classifier(network, mul_0, num_classes=num_classes,
                                   is_training=self.is_training)
+            net = attn_2 + net
             self.logits = tf.nn.sigmoid(net)
             self.error = self.logits - self.input_y
             self.loss = tf.reduce_mean(tf.square(self.error))
