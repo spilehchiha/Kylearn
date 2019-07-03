@@ -53,12 +53,12 @@ class Resnet_1d(Network):
             net = tf.layers.batch_normalization(inputs=net, training=is_training, momentum=0.999)
             net = tf.nn.leaky_relu(net)
 
-            if global_pool:
-                net = tf.reduce_mean(net, 1, name='pool5', keep_dims=True)
+            # if global_pool:
+            #     net = tf.reduce_mean(net, 1, name='pool5', keep_dims=True)
 
 
             net = tf.layers.flatten(net)
-            net = tf.layers.dense(inputs=net, units=num_classes)
+            net = tf.layers.dense(inputs=net, units=num_classes, kernel_initializer=tf.glorot_normal_initializer())
 
 
             return net
