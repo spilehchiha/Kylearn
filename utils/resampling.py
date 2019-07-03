@@ -32,5 +32,4 @@ def multi_inputs_random_upsampling(X1, X2, y, random_state):
     X1_res = X1_res.reshape([X1_res.shape[0]] + list(shape1[1:]))
     X2_res, y_res = ros.fit_resample(X2, y)
     X2_res = X2_res.reshape([X2_res.shape[0]] + list(shape2[1:]))
-    y_res = y_res.reshape([-1, 1])
     return X1_res, X2_res, y_res

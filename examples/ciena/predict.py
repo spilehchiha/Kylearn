@@ -1,6 +1,6 @@
 from Resnet.resnet_model import ResnetModel
 from Resnet.resnet_network import Resnet
-from CNN.cnn_model import CNNModel
+from CNN.cnn_model import CNN_model
 from CNN.cnn_network import Cnn_3layers
 from examples.ciena.ciena_pred_dataset import pred_Dataset_2
 from utils.utils import get_variable_num
