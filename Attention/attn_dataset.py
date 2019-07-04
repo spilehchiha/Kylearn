@@ -17,7 +17,7 @@ class Attn_dataset(Dataset):
         assert X.shape[0] == y.shape[0]
         assert dev.shape[0] == y.shape[0]
         print(collections.Counter(np.argmax(y, 1).flatten()))
-        X, dev, y = multi_inputs_random_upsampling(X, dev, y, 12)
+        # X, dev, y = multi_inputs_random_upsampling(X, dev, y, 12)
         print(collections.Counter(np.argmax(y, 1).flatten()))
         self.train_set = np.zeros(X.shape[0], dtype=[
             ('x', np.float32, (X.shape[1:])),
