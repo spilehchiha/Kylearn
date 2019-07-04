@@ -67,3 +67,8 @@ July 3
 1. Build attention mechanism, but something was wrong about the attn_model
 2. Fixed the bug above, it's the problem of `training` in batch normalization.
 3. multi-class classification should use cross-entropy
+
+
+next:
+1. Think about imbalance
+2. Study batch norm
