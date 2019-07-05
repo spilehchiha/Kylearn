@@ -24,21 +24,24 @@ class Attn_model(Model):
 
 
         with tf.variable_scope('scaling_attention'):
+            # initialize weight to all one and not using bias, this case the values in the
+            # attention matrix that doesn't contribute to the classification will be 1.
+            # That means not updated since the value of the corresponding PM value is always 0.
             w1 = tf.get_variable('attn_w', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
-            b1 = tf.get_variable('attn_b', [1, feature_num], trainable=True, initializer=initializer)
+            # b1 = tf.get_variable('attn_b', [1, feature_num], trainable=True, initializer=initializer)
             # if use more than one attentions, use tf.scan
-            attn_1 = tf.matmul(self.input_dev, w1) + b1
-            attn_1 = tf.layers.batch_normalization(inputs=attn_1, training=self.is_training, momentum=0.999)
+            attn_1 = tf.matmul(self.input_dev, w1)
+            # attn_1 = tf.layers.batch_normalization(inputs=attn_1, training=self.is_training, momentum=0.999)
             self.scaling_attention = tf.nn.leaky_relu(attn_1)
             attn_1 = tf.expand_dims(self.scaling_attention, axis=-1)
             scaled_input_x = tf.multiply(self.input_x, attn_1)
 
         with tf.variable_scope('bias_attention'):
-            w2 = tf.get_variable('attn_w', [dev_num, num_classes], trainable=True, initializer=initializer)
-            b2 = tf.get_variable('attn_b', [1, num_classes], trainable=True, initializer=initializer)
-            self.bias_attention = tf.matmul(self.input_dev, w2) + b2
-            self.bias_attention = tf.layers.batch_normalization(inputs=self.bias_attention, training=self.is_training, momentum=0.999)
-            self.bias_attention = tf.nn.leaky_relu(self.bias_attention)
+            w2 = tf.get_variable('attn_w', [dev_num, num_classes], trainable=True, initializer=tf.initializers.zeros)
+            # b2 = tf.get_variable('attn_b', [1, num_classes], trainable=True, initializer=tf.initializers.zeros)
+            self.bias_attention = tf.matmul(self.input_dev, w2)
+            # self.bias_attention = tf.layers.batch_normalization(inputs=self.bias_attention, training=self.is_training, momentum=0.999)
+            # self.bias_attention = tf.nn.leaky_relu(self.bias_attention)
 
 
         with tf.variable_scope('classifier'):
@@ -50,9 +53,8 @@ class Attn_model(Model):
             net = self.classifier(network, scaled_input_x, num_classes=num_classes,
                                   is_training=self.is_training)
             self.logits = self.bias_attention + net
-            # self.logits = tf.layers.batch_normalization(inputs=self.logits, training=self.is_training, momentum=0.999)
-
-            # self.logits = tf.nn.softmax(net)
+            # self.logits = tf.multiply(net, self.bias_attention)
+            self.logits = tf.layers.batch_normalization(inputs=self.logits, training=self.is_training, momentum=0.999)
 
         with tf.variable_scope('error'):
             self.loss = tf.reduce_mean(
