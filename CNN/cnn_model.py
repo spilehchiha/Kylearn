@@ -8,7 +8,7 @@ import collections
 
 class CNN_model(Model):
 
-    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num, batch_size, lr ):
+    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num, batch_size, lr, regression = False):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
@@ -16,17 +16,28 @@ class CNN_model(Model):
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
-            self.input_y = tf.placeholder(tf.float32, [None, num_classes], name='alarm')
-        with tf.variable_scope('classifier'):
+            self.input_y = tf.placeholder(tf.float32, [None, num_classes], name='input_y')
+        with tf.variable_scope('logits'):
             self.logits = self.classifier(network, self.input_x, num_classes=num_classes)
 
-        with tf.variable_scope('error'):
-            self.loss = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.input_y, logits=self.logits))
-            self.prediction = tf.nn.softmax(self.logits)
-            self.prediction = tf.argmax(self.prediction, 1)
-            self.real = tf.argmax(self.input_y, 1)
-            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
+        if regression:
+            with tf.variable_scope('error'):
+                self.logits = tf.nn.sigmoid(self.logits )
+                self.error = self.logits - self.input_y
+                self.loss = tf.reduce_mean(tf.square(self.error))
+                self.prediction = tf.nn.softmax(self.logits)
+                self.prediction = tf.argmax(self.prediction, 1)
+                self.real = tf.argmax(self.input_y, 1)
+                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
+
+        else:
+            with tf.variable_scope('error'):
+                self.loss = tf.reduce_mean(
+                    tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.input_y, logits=self.logits))
+                self.prediction = tf.nn.softmax(self.logits)
+                self.prediction = tf.argmax(self.prediction, 1)
+                self.real = tf.argmax(self.input_y, 1)
+                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
 
         self.best_loss = 1000
 
@@ -106,4 +117,10 @@ class CNN_model(Model):
             self.input_y: data['y']
         })
         return accuracy
+
+    def get_logits(self,data):
+        logits = self.run(self.logits, feed_dict={
+            self.input_x: data['x']
+        })
+        return logits
 
