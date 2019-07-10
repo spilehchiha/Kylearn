@@ -3,12 +3,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sb
 import math
-from sklearn.metrics import confusion_matrix
 
-def cm_metrix(y_test, y_pred):
-    return confusion_matrix(y_true=y_test, y_pred=y_pred)
 
-def cm_analysis(cm, labels, x_rotation=90, y_rotation=0, font_size=0.33, precision=False):
+def draw_confusion_matrix(cm, labels, x_rotation=90, y_rotation=0, font_size=0.33, precision=False):
     plt.rcParams['savefig.dpi'] = 300  # 图片像素
     plt.rcParams['figure.dpi'] = 300  # 分辨率
 
@@ -50,3 +47,11 @@ def cm_analysis(cm, labels, x_rotation=90, y_rotation=0, font_size=0.33, precisi
     plt.yticks(rotation=y_rotation)
 
     plt.show()
+
+
+def plot_onedevice(proba, which, threshold, y_test, alarm_list):
+    which_column = proba[:,which-1].copy()
+    which_column[which_column >= threshold] = 1
+    which_column[which_column < threshold] = 0
+
+    # draw_confusion_matrix(cm, ['Normal', alarm_list[which - 1]], precision=True)
