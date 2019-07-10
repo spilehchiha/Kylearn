@@ -110,7 +110,7 @@ class ResnetModel(Model):
 
         cm = cm_metrix(dataset.test_set['y'], results)
 
-        cm_analysis(cm, ['Normal', 'malfunction'], precision=True)
+        draw_confusion_matrix(cm, ['Normal', 'malfunction'], precision=True)
 
     def predict_proba(self, dataset):
         results = self.run([self.logits], feed_dict={
