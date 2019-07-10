@@ -19,7 +19,7 @@ class Attn_dataset(Dataset):
         self.train_set = np.zeros(X.shape[0], dtype=[
             ('x', np.float32, (X.shape[1:])),
             ('dev', np.int32, (dev.shape[1])),
-            ('y', np.int32, (out_num))
+            ('y', np.int32, ([out_num]))
         ])
         self.train_set['x'] = X
         self.train_set['dev'] = dev
@@ -35,7 +35,7 @@ class Attn_dataset(Dataset):
         self.test_set = np.zeros(X2.shape[0], dtype=[
             ('x', np.float32, (X2.shape[1:])),
             ('dev', np.int32, (dev2.shape[1])),
-            ('y', np.int32, (out_num))
+            ('y', np.int32, ([out_num]))
         ])
         self.test_set['x'] = X2
         self.test_set['dev'] = dev2

@@ -44,6 +44,8 @@ class Attn_model(Model):
                 self.bias_attention = tf.matmul(self.input_dev, w2)
                 self.bias_attention = tf.layers.batch_normalization(inputs=self.bias_attention)
                 self.bias_attention = tf.nn.relu(self.bias_attention)
+                # better for visualization
+                self.attn2 = tf.nn.sigmoid(self.bias_attention)
 
 
         with tf.variable_scope('logits'):
@@ -71,6 +73,7 @@ class Attn_model(Model):
                 self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.input_y), tf.float32))
         else:
             with tf.variable_scope('error'):
+                self.proba = tf.nn.sigmoid(self.logits)
                 self.loss = tf.reduce_mean(
                     # use `sparse`, no need to one-hot the `input_y`
                     tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.input_y, logits = self.logits))
