@@ -4,11 +4,13 @@ from utils import utils
 from framework.model import Model
 from utils.string_utils import DictFormatter
 from visualization.draw_matrix import *
+from evaluation.metrics import confusion_matrix
 import collections
 
 class CNN_model(Model):
 
-    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num, batch_size, lr, regression = False):
+    def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes,
+                 batch_size, lr, regression = False, threshold=0.99):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
@@ -22,16 +24,17 @@ class CNN_model(Model):
 
         if regression:
             with tf.variable_scope('error'):
-                self.logits = tf.nn.sigmoid(self.logits )
-                self.error = self.logits - self.input_y
+                self.proba = tf.nn.sigmoid(self.logits)
+                self.error = self.proba - self.input_y
                 self.loss = tf.reduce_mean(tf.square(self.error))
-                self.prediction = tf.nn.softmax(self.logits)
-                self.prediction = tf.argmax(self.prediction, 1)
-                self.real = tf.argmax(self.input_y, 1)
-                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
+                threshold = tf.constant(threshold)
+                condition = tf.greater_equal(self.proba, threshold)
+                self.prediction = tf.where(condition, tf.ones_like(self.proba), tf.zeros_like(self.proba), name='prediction')
+                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.input_y), tf.float32))
 
         else:
             with tf.variable_scope('error'):
+                self.proba = tf.nn.sigmoid(self.logits)
                 self.loss = tf.reduce_mean(
                     tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.input_y, logits=self.logits))
                 self.prediction = tf.nn.softmax(self.logits)
@@ -99,28 +102,29 @@ class CNN_model(Model):
 
 
         return stop_training
-    def plot(self, prediction, dataset, label_list):
-
-        cm = cm_metrix(np.argmax(dataset.test_set['y'], 1), prediction)
-
-        cm_analysis(cm, label_list, precision=True)
 
     def get_prediction(self, data):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data['x']
+            self.input_x: data.test_set['x']
         })
         return prediction
 
     def get_accuracy(self, data):
         accuracy = self.run(self.accuracy, feed_dict = {
-            self.input_x: data['x'],
-            self.input_y: data['y']
+            self.input_x: data.test_set['x'],
+            self.input_y: data.test_set['y']
         })
         return accuracy
 
-    def get_logits(self,data):
+    def get_logits(self, data):
         logits = self.run(self.logits, feed_dict={
-            self.input_x: data['x']
+            self.input_x: data.test_set['x']
         })
         return logits
+
+    def get_proba(self, data):
+        proba = self.run(self.proba, feed_dict={
+            self.input_x: data.test_set['x']
+        })
+        return proba
 

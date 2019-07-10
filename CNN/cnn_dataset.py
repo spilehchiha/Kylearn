@@ -6,7 +6,7 @@ from utils.resampling import multi_inputs_random_upsampling
 import collections
 
 
-class Cnn_dataset(Dataset):
+class CNN_dataset(Dataset):
     def __init__(self, feature_path, label_path, out_num):
         super().__init__()
 
