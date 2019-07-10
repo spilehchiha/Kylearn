@@ -1,5 +1,5 @@
 from Attention.attn_model import Attn_model
-from Attention.residual_network_1d import Resnet_1d
+from Networks.residual_network_1d import Resnet_1d
 from Attention.attn_dataset import Attn_dataset
 dataset = Attn_dataset(feature_path='/home/oem/Projects/NetDeviceAbnormalDetection/data/attention/c_PMs',
                        dev_path= '/home/oem/Projects/NetDeviceAbnormalDetection/data/attention/c_dev',
