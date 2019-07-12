@@ -26,13 +26,15 @@ class Attn_model_2d(Model):
             # initialize weight to all one and not using bias, this case the values in the
             # attention matrix that doesn't contribute to the classification will be 1.
             # That means not updated since the value of the corresponding PM value is always 0.
-            w1 = tf.get_variable('attn_w', [input_shape[0], dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
-            # if use more than one attentions, use tf.scan
-            attn_1 = tf.scan(lambda a,x: tf.matmul(self.input_dev, x))
-            # attn_1 = tf.matmul(self.input_dev, w1)
+            w1 = tf.get_variable('attn_w', [dev_num, input_shape[0], feature_num], trainable=True, initializer=tf.initializers.ones)
+            # tf.einsum (Einstein summation)
+            # [?, 11] * [11, 3, 45] -> [?, 3, 45]
+            attn_1 = tf.einsum('ni,ijk->njk', self.input_dev, w1)
             # attn_1 = tf.layers.batch_normalization(inputs=attn_1, training=self.is_training, momentum=0.999)
             self.scaling_attention = tf.nn.relu(attn_1)
+            # expand attention matrix to a 4-D tensor to match the input_x
             attn_1 = tf.expand_dims(self.scaling_attention, axis=-1)
+            # Dot product to scale the input
             scaled_input_x = tf.multiply(self.input_x, attn_1)
 
         if regression:
