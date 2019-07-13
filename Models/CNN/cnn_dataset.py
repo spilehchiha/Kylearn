@@ -35,3 +35,32 @@ class CNN_dataset(Dataset):
         self.test_set['y'] = y2
 
         self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=22)
+
+class Concat_dataset(Dataset):
+    def __init__(self, feature_path, dev_path, label_path, out_num):
+        super().__init__()
+        # train set
+        X = np.load(feature_path)
+        dev = np.load(dev_path)
+        y = np.load(label_path)
+        assert X.shape[0] == y.shape[0]
+        assert dev.shape[0] == y.shape[0]
+        dev = dev.repeat(X.shape[1], axis=0)
+        dev = dev.reshape([-1, X.shape[1], dev.shape[1]])
+        X = np.concatenate([dev, X], axis=2)
+        X = np.expand_dims(X, -1)
+        dataset = np.zeros(X.shape[0], dtype=[
+            ('x', np.float32, (X.shape[1:])),
+            ('y', np.int32, ([out_num]))
+        ])
+        dataset['x'] = X
+        dataset['y'] = y
+
+        anomaly = dataset[dataset['y'].flatten() != 0]
+        normal = dataset[dataset['y'].flatten() == 0]
+        del dataset
+        normal,_ = train_test_split(normal, train_size= anomaly.shape[0], random_state=22)
+        self.train_set,self.test_set = train_test_split(
+            np.concatenate([anomaly, normal], axis=0), test_size=0.2, random_state=23
+        )
+        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=22)
