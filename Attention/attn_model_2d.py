@@ -9,11 +9,12 @@ import collections
 class Attn_model_2d(Model):
 
     def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num,
-                 batch_size, lr, regression=False, threshold=0.99):
+                 batch_size, lr, regression=False, threshold=0.99, patience=10):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
         self.patience = 0
+        self.patience_max = patience
         initializer = tf.contrib.layers.variance_scaling_initializer()
 
         with tf.variable_scope("input"):
@@ -96,7 +97,7 @@ class Attn_model_2d(Model):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         train_op = optimizer.minimize(self.loss, global_step=self.global_step)
         self.train_op = tf.group([train_op, update_ops])
-        self.saver = tf.train.Saver(max_to_keep=10)
+        self.saver = tf.train.Saver(max_to_keep=self.patience_max)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes, is_training):
@@ -148,7 +149,7 @@ class Attn_model_2d(Model):
         else:
             self.patience += 1
 
-        if self.patience == 10:
+        if self.patience == self.patience_max:
             stop_training = True
         else:
             stop_training = False
