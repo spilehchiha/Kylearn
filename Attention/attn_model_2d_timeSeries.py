@@ -9,11 +9,12 @@ import collections
 class Attn_model_2d_timeSeries(Model):
 
     def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num,
-                 batch_size, lr, regression=False, threshold=0.99):
+                 batch_size, lr, regression=False, threshold=0.99, patience=10):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
         self.patience = 0
+        self.patience_max = patience
         initializer = tf.contrib.layers.variance_scaling_initializer()
 
         with tf.variable_scope("input"):
@@ -42,13 +43,13 @@ class Attn_model_2d_timeSeries(Model):
 
         # Outer product
         # [?, 3] * [?, 45] -> [?, 3, 45]
-        input_attention = tf.einsum('nj,nk->njk', self.time_attention, self.scaling_attention)
+        self.input_attention = tf.einsum('nj,nk->njk', self.time_attention, self.scaling_attention)
         # [?, 3, 45] -> [?, 3, 45, 1]
-        input_attention = tf.expand_dims(input_attention, axis = -1)
+        self.input_attention = tf.expand_dims(self.input_attention, axis = -1)
 
         # Dot product to scale the input
         # [?, 3, 45, 1] X [?, 3, 45, 1]
-        scaled_input_x = tf.multiply(input_attention, self.input_x)
+        scaled_input_x = tf.multiply(self.input_attention, self.input_x)
 
         if regression:
             self.bias_attention = tf.constant(0, dtype=tf.float32)
@@ -109,7 +110,7 @@ class Attn_model_2d_timeSeries(Model):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         train_op = optimizer.minimize(self.loss, global_step=self.global_step)
         self.train_op = tf.group([train_op, update_ops])
-        self.saver = tf.train.Saver(max_to_keep=10)
+        self.saver = tf.train.Saver(max_to_keep=self.patience_max)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes, is_training):
@@ -161,7 +162,7 @@ class Attn_model_2d_timeSeries(Model):
         else:
             self.patience += 1
 
-        if self.patience == 10:
+        if self.patience == self.patience_max:
             stop_training = True
         else:
             stop_training = False
@@ -203,10 +204,10 @@ class Attn_model_2d_timeSeries(Model):
         return proba
 
     def get_attn_matrix(self, onehot_dev):
-        scaling_attention, time_attention = self.run([self.scaling_attention, self.time_attention],
-                                                     feed_dict={self.input_dev: onehot_dev,
-                                                                self.is_training: False})
-        return scaling_attention, time_attention
+        scaling_attention, time_attention, input_attention = self.run(
+            [self.scaling_attention, self.time_attention, self.input_attention],
+            feed_dict={self.input_dev: onehot_dev, self.is_training: False})
+        return scaling_attention, time_attention, input_attention
 
     #
     # def plot_onedevice(self, logits, which, threshold, dataset, alarm_list):
