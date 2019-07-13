@@ -1,6 +1,5 @@
-from abc import abstractmethod
 import numpy as np
-from framework.mini_batch import random_index
+from utils.mini_batch import random_index
 
 class Dataset:
     def __init__(self,  **kwargs):
