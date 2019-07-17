@@ -10,11 +10,12 @@ import collections
 class CNN_model(Model):
 
     def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes,
-                 batch_size, lr, regression = False, threshold=0.99):
+                 batch_size, lr, regression = False, threshold=0.99, patience = 10):
         super().__init__(ckpt_path, tsboard_path)
 
         self.batch_size = batch_size
         self.patience = 0
+        self.patience_max = patience
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
@@ -46,7 +47,7 @@ class CNN_model(Model):
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
-        self.saver = tf.train.Saver(max_to_keep=10)
+        self.saver = tf.train.Saver(max_to_keep=self.patience_max)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes):
@@ -95,7 +96,7 @@ class CNN_model(Model):
         else:
             self.patience += 1
 
-        if self.patience == 10:
+        if self.patience == self.patience_max:
             stop_training = True
         else:
             stop_training = False
