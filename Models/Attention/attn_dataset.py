@@ -69,4 +69,4 @@ class Attn_dataset_2d(Dataset):
         self.train_set,self.test_set = train_test_split(
             np.concatenate([anomaly, normal], axis=0), test_size=0.2, random_state=23
         )
-        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=22)
+        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=24)
