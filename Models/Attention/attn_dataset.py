@@ -56,7 +56,7 @@ class Attn_dataset_2d(Dataset):
         dataset = np.zeros(X.shape[0], dtype=[
             ('x', np.float32, (X.shape[1:])),
             ('dev', np.int32, (dev.shape[1])),
-            ('y', np.int32, ([1]))
+            ('y', np.int32, ([out_num]))
         ])
         dataset['x'] = X
         dataset['dev'] = dev
