@@ -20,6 +20,7 @@ class CNN_model(Model):
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='input_x')
             self.input_y = tf.placeholder(tf.float32, [None, num_classes], name='input_y')
+            self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
         with tf.variable_scope('logits'):
             self.logits = self.classifier(network, self.input_x, num_classes=num_classes)
 
@@ -46,13 +47,15 @@ class CNN_model(Model):
         self.best_loss = 1000
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
-        self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        train_op = optimizer.minimize(self.loss, global_step=self.global_step)
+        self.train_op = tf.group([train_op, update_ops])
         self.saver = tf.train.Saver(max_to_keep=self.patience_max)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
 
     def classifier(self, network, input, num_classes):
 
-        return network.network(inputs=input, num_classes=num_classes)
+        return network.network(inputs=input, num_classes=num_classes, is_training = self.is_training)
 
     def initialize_variables(self, **kwargs):
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -70,7 +73,8 @@ class CNN_model(Model):
 
             accuracy, loss, _ = self.run([self.accuracy, self.loss, self.train_op],
                                                     feed_dict={self.input_x: batch['x'],
-                                                               self.input_y: batch['y']}
+                                                               self.input_y: batch['y'],
+                                                               self.is_training: True}
                                                                )
             step_control = self.run(self.training_control)
             if step_control['time_to_print']:
@@ -86,8 +90,9 @@ class CNN_model(Model):
     def evaluate(self, eval_data):
         step, loss, accuracy = self.run([self.global_step, self.loss, self.accuracy],
                                          feed_dict={self.input_x: eval_data['x'],
-                                                    self.input_y: eval_data['y']
-                                                    })
+                                                    self.input_y: eval_data['y'],
+                                                    self.is_training: True}
+                                                    )
         print('val_loss= ' + str(loss) + '    val_acc= '+str(accuracy)+'          round: ' + str(step))
         '''early stoping'''
         if loss < self.best_loss:
@@ -106,26 +111,30 @@ class CNN_model(Model):
 
     def get_prediction(self, data):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data['x']
+            self.input_x: data['x'],
+            self.is_training: False
         })
         return prediction
 
     def get_accuracy(self, data):
         accuracy = self.run(self.accuracy, feed_dict = {
             self.input_x: data['x'],
+            self.is_training: False,
             self.input_y: data['y']
         })
         return accuracy
 
     def get_logits(self, data):
         logits = self.run(self.logits, feed_dict={
-            self.input_x: data['x']
+            self.input_x: data['x'],
+            self.is_training: False
         })
         return logits
 
     def get_proba(self, data):
         proba = self.run(self.proba, feed_dict={
-            self.input_x: data['x']
+            self.input_x: data['x'],
+            self.is_training: False
         })
         return proba
 
