@@ -1,13 +1,15 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 import numpy as np
 import pandas as pd
 import seaborn as sb
 import math
 
+pyplot.rcParams['savefig.dpi'] = 300  # pixel
+pyplot.rcParams['figure.dpi'] = 300  # resolution
+pyplot.rcParams["figure.figsize"] = [0.5,0.5] # figure size
 
-def draw_confusion_matrix(cm, labels, x_rotation=90, y_rotation=0, font_size=0.33, precision=False):
-    plt.rcParams['savefig.dpi'] = 300  # 图片像素
-    plt.rcParams['figure.dpi'] = 300  # 分辨率
+def draw_confusion_matrix(cm, labels, plt = pyplot, x_rotation=90, y_rotation=0, font_size=0.33, precision=False):
+
 
     if (precision):
         '''flip and rotate the confusion metrix'''
