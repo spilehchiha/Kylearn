@@ -2,8 +2,6 @@ import numpy as np
 import tensorflow as tf
 from utils import utils
 from framework.model import Model
-from utils.string_utils import DictFormatter
-from visualization.draw_matrix import *
 import collections
 
 
@@ -358,33 +356,33 @@ class Attn_model_2d(Model):
 
     def get_prediction(self, data, is_training=False):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return prediction
 
     def get_accuracy(self, data, is_training=False):
         accuracy = self.run(self.accuracy, feed_dict = {
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
-            self.input_y: data.test_set['y'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
+            self.input_y: data['y'],
             self.is_training: is_training
         })
         return accuracy
 
     def get_logits(self, data, is_training=False):
         logits = self.run([self.logits], feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return logits
 
     def get_proba(self, data, is_training=False):
         proba = self.run(self.proba, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return proba
@@ -561,33 +559,33 @@ class Attn_model_2d_timeSeries(Model):
 
     def get_prediction(self, data, is_training=False):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return prediction
 
     def get_accuracy(self, data, is_training=False):
         accuracy = self.run(self.accuracy, feed_dict = {
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
-            self.input_y: data.test_set['y'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
+            self.input_y: data['y'],
             self.is_training: is_training
         })
         return accuracy
 
     def get_logits(self, data, is_training=False):
         logits = self.run([self.logits], feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return logits
 
     def get_proba(self, data, is_training=False):
         proba = self.run(self.proba, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return proba

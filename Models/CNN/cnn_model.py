@@ -106,26 +106,26 @@ class CNN_model(Model):
 
     def get_prediction(self, data):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data.test_set['x']
+            self.input_x: data['x']
         })
         return prediction
 
     def get_accuracy(self, data):
         accuracy = self.run(self.accuracy, feed_dict = {
-            self.input_x: data.test_set['x'],
-            self.input_y: data.test_set['y']
+            self.input_x: data['x'],
+            self.input_y: data['y']
         })
         return accuracy
 
     def get_logits(self, data):
         logits = self.run(self.logits, feed_dict={
-            self.input_x: data.test_set['x']
+            self.input_x: data['x']
         })
         return logits
 
     def get_proba(self, data):
         proba = self.run(self.proba, feed_dict={
-            self.input_x: data.test_set['x']
+            self.input_x: data['x']
         })
         return proba
 
