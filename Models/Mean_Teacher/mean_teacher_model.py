@@ -166,10 +166,8 @@ class Mean_Teacher_model_1d(Model):
             if step_control['time_to_stop']:
                 break
             if step_control['time_to_evaluate']:
-                if_stop = self.evaluate(dataset.val_set)
-                self.save_checkpoint()
-                if if_stop:
-                    break
+                self.evaluate(dataset.val_set)
+
 
     def evaluate(self, val_data):
         step, loss, accuracy = self.run([self.global_step, self.loss, self.accuracy],
@@ -178,19 +176,7 @@ class Mean_Teacher_model_1d(Model):
                                             self.input_y: val_data['y'],
                                             self.is_training: True})
         self.logger.info('val_loss= ' + str(loss) + '    val_acc= '+str(accuracy)+'          round: ' + str(step))
-        '''early stoping'''
-        if loss < self.best_loss:
-            self.best_loss = loss
-            self.patience = 0
-        else:
-            self.patience += 1
 
-        if self.patience == self.patience_max:
-            stop_training = True
-        else:
-            stop_training = False
-
-        return stop_training
 
 
     def get_prediction(self, data, is_training=False):
