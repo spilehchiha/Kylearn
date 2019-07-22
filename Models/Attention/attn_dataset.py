@@ -4,8 +4,6 @@ from sklearn.model_selection import train_test_split
 from framework.dataset import Dataset
 from utils.resampling import multi_inputs_random_upsampling
 import collections
-
-
 class Attn_dataset(Dataset):
     def __init__(self, feature_path, dev_path, label_path, out_num):
         super().__init__()
@@ -13,7 +11,10 @@ class Attn_dataset(Dataset):
         # train set
         X = np.load(feature_path + '_train.npy')
         dev = np.load(dev_path + '_train.npy')
-        y = np.load(label_path + '_train.npy').reshape([-1,out_num])
+        # y = np.load(label_path + '_train.npy').reshape(-1)
+        # y = y-1
+        # y = np.eye(out_num)[y].reshape([-1, out_num])
+        y = np.load(label_path + '_train.npy').reshape([-1, out_num])
         assert X.shape[0] == y.shape[0]
         assert dev.shape[0] == y.shape[0]
         self.train_set = np.zeros(X.shape[0], dtype=[
