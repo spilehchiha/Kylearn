@@ -11,9 +11,8 @@ from utils.log import log_down
 class Mean_Teacher_model_1d(Model):
 
     def __init__(self, ckpt_path, tsboard_path, network, input_shape, num_classes, feature_num, dev_num,
-                 batch_size, lr, max_step=100000000000,
-                 wd=0.02, ema_decay=0.999, warmup_pos=0.4, coefficient=50,
-                 regression=False, threshold=0.99, patience=10):
+                 batch_size, lr, max_step=100000,
+                 wd=0.02, ema_decay=0.999, warmup_pos=0.4, coefficient=50, threshold=0.99, patience=10):
         super().__init__(ckpt_path, tsboard_path)
 
         self.logger = log_down('train_log')
@@ -28,53 +27,61 @@ class Mean_Teacher_model_1d(Model):
 
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='features')
-            self.input_dev = tf.placeholder(tf.float32, [None, dev_num], name='dev_type')
+            self.input_dev = tf.placeholder(tf.float32, [None,], name='dev_type')
             self.input_y = tf.placeholder(tf.float32, [None,], name='alarm')
-            # self.unlabel_x = tf.placeholder(tf.float32, [None] + input_shape, name='unlabeled_features')
-            # self.unlabel_dev = tf.placeholder(tf.float32, [None, dev_num], name='unlabeled_dev_type')
-            # self.unlabel_y = tf.placeholder(tf.float32, [None,], name='unlabeled_alarm')
+            self.unlabel_x = tf.placeholder(tf.float32, [None] + input_shape, name='unlabeled_features')
+            self.unlabel_dev = tf.placeholder(tf.float32, [None,], name='unlabeled_dev_type')
             self.is_training = tf.placeholder(dtype=tf.bool, shape=(), name='is_training')
 
+        # with tf.variable_scope('scaling_attention'):
+        #     # initialize weight to all one and not using bias, this case the values in the
+        #     # attention matrix that doesn't contribute to the classification will be 1.
+        #     # That means not updated since the value of the corresponding PM value is always 0.
+        #
+        #     # ----------------------------------------
+        #     w1 = tf.get_variable('attn_w', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
+        #     # tf.einsum (Einstein summation)
+        #     # [?, 11] * [11, 45] -> [?, 45]
+        #     attn_1 = tf.einsum('ni,ik->nk', self.input_dev, w1)
+        #     self.scaling_attention = tf.nn.relu(attn_1)
+        #     attn_1 = tf.expand_dims(self.scaling_attention, axis=-1)
+        #
+        #
+        #
+        # if regression:
+        #     self.bias_attention = tf.constant(0, dtype=tf.float32)
+        # else:
+        #     with tf.variable_scope('bias_attention'):
+        #         w2 = tf.get_variable('attn_w', [dev_num, num_classes], trainable=True, initializer=initializer)
+        #         self.bias_attention = tf.matmul(self.input_dev, w2)
+        #         self.bias_attention = tf.nn.relu(self.bias_attention)
+        #         # better for visualization
+        #         self.attn2 = tf.nn.sigmoid(self.bias_attention)
+
         with tf.variable_scope('scaling_attention'):
-            # initialize weight to all one and not using bias, this case the values in the
-            # attention matrix that doesn't contribute to the classification will be 1.
-            # That means not updated since the value of the corresponding PM value is always 0.
+            input_attn = tf.get_variable('input_attention', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
+            self.input_attention = tf.nn.relu(input_attn)
+            input_matrices = tf.gather(self.input_attention, tf.cast(self.input_dev, tf.int32))
+            input_matrices = tf.expand_dims(input_matrices, axis=-1)
+            input_matrices_un = tf.gather(self.input_attention, tf.cast(self.unlabel_dev, tf.int32))
+            input_matrices_un = tf.expand_dims(input_matrices_un, axis=-1)
 
-            # ----------------------------------------
-            w1 = tf.get_variable('attn_w', [dev_num, feature_num], trainable=True, initializer=tf.initializers.ones)
-            # tf.einsum (Einstein summation)
-            # [?, 11] * [11, 45] -> [?, 45]
-            attn_1 = tf.einsum('ni,ik->nk', self.input_dev, w1)
-            self.scaling_attention = tf.nn.relu(attn_1)
-            attn_1 = tf.expand_dims(self.scaling_attention, axis=-1)
-            # Dot product to scale the input
-            scaled_input_x = tf.multiply(self.input_x, attn_1)
+        with tf.variable_scope('bias_attention'):
+            output_attn = tf.get_variable('output_attention', [dev_num, num_classes], trainable=True, initializer=tf.initializers.zeros)
+            self.output_attention = tf.nn.relu(output_attn)
+            output_bias = tf.gather(self.output_attention, tf.cast(self.input_dev, tf.int32))
 
-        if regression:
-            self.bias_attention = tf.constant(0, dtype=tf.float32)
-        else:
-            with tf.variable_scope('bias_attention'):
-                w2 = tf.get_variable('attn_w', [dev_num, num_classes], trainable=True, initializer=initializer)
-                self.bias_attention = tf.matmul(self.input_dev, w2)
-                self.bias_attention = tf.nn.relu(self.bias_attention)
-                # better for visualization
-                self.attn2 = tf.nn.sigmoid(self.bias_attention)
+
+        # apply attention matrix
+        scaled_input_x = tf.multiply(self.input_x, input_matrices)
+        scaled_unlabeled_x = tf.multiply(self.unlabel_x, input_matrices_un)
 
         # Mean-Teacher
-
-        # Split into 2 groups
-        labeled_mask = tf.not_equal(self.input_y, -1)
-        unlabeled_mask = tf.equal(self.input_y, -1)
-        labeled_x = tf.boolean_mask(scaled_input_x, labeled_mask)
-        labeled_y = tf.boolean_mask(self.input_y, labeled_mask)
-        onehot_y = tf.cast(labeled_y, tf.int32)
-        self.onehot_y = tf.one_hot(onehot_y, num_classes)
-        unlabeled_x = tf.boolean_mask(scaled_input_x, unlabeled_mask)
-
         # Labeled part
-        logits_labeled = self.classifier(network, labeled_x, num_classes=num_classes,
+
+        logits = self.classifier(network, scaled_input_x, num_classes=num_classes,
                               is_training=self.is_training)
-        self.logits = logits_labeled + tf.boolean_mask(self.bias_attention, labeled_mask)
+        self.logits = logits + output_bias
 
         # Update BN before here
         post_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -85,34 +92,38 @@ class Mean_Teacher_model_1d(Model):
         ema_getter = functools.partial(getter_ema, ema)
 
         # Unlabeled part: Consistency Loss
-        logits_t = self.classifier(network, unlabeled_x, num_classes=num_classes,
+        logits_t = self.classifier(network, scaled_unlabeled_x, num_classes=num_classes,
                               is_training=self.is_training, getter=ema_getter)
         logits_teacher = tf.stop_gradient(logits_t)
-        logits_student = self.classifier(network, unlabeled_x, num_classes=num_classes,
+        logits_student = self.classifier(network, scaled_unlabeled_x, num_classes=num_classes,
                               is_training=self.is_training) # This part better use augmented `unlabeled_x`
         loss_consistency = tf.reduce_mean((tf.nn.softmax(logits_teacher) - tf.nn.softmax(logits_student)) ** 2, -1)
         self.loss_c = tf.reduce_mean(loss_consistency)
 
         # Supervised Loss
-        if regression:
-            with tf.variable_scope('error'):
-                self.proba = tf.nn.sigmoid(self.logits)
-                self.error = self.proba - labeled_y
-                self.loss = tf.reduce_mean(tf.square(self.error))
-                threshold = tf.constant(threshold)
-                condition = tf.greater_equal(self.proba, threshold)
-                self.prediction = tf.where(condition, tf.ones_like(self.proba), tf.zeros_like(self.proba), name='prediction')
-                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.onehot_y), tf.float32))
-        else:
-            with tf.variable_scope('error'):
-                self.proba = tf.nn.sigmoid(self.logits)
-                self.loss = tf.reduce_mean(
-                    # use `sparse`, no need to one-hot the `input_y`
-                    tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.onehot_y, logits = self.logits))
-                self.prediction = tf.nn.softmax(self.logits)
-                self.prediction = tf.argmax(self.prediction, 1)
-                self.real = tf.argmax(self.onehot_y, 1)
-                self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
+        # if regression:
+        #     with tf.variable_scope('error'):
+        #         self.proba = tf.nn.sigmoid(self.logits)
+        #         self.error = self.proba - labeled_y
+        #         self.loss = tf.reduce_mean(tf.square(self.error))
+        #         threshold = tf.constant(threshold)
+        #         condition = tf.greater_equal(self.proba, threshold)
+        #         self.prediction = tf.where(condition, tf.ones_like(self.proba), tf.zeros_like(self.proba), name='prediction')
+        #         self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.onehot_y), tf.float32))
+        # else:
+
+        onehot_y = tf.cast(self.input_y, tf.int32)
+        self.onehot_y = tf.one_hot(onehot_y, num_classes)
+
+        with tf.variable_scope('error'):
+            self.proba = tf.nn.sigmoid(self.logits)
+            self.loss = tf.reduce_mean(
+                # use `sparse`, no need to one-hot the `input_y`
+                tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.onehot_y, logits = self.logits))
+            self.prediction = tf.nn.softmax(self.logits)
+            self.prediction = tf.argmax(self.prediction, 1)
+            self.real = tf.argmax(self.onehot_y, 1)
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.real), tf.float32))
 
         tf.summary.scalar('losses/xe', self.loss)
         tf.summary.scalar('losses/mt', self.loss_c)
@@ -147,14 +158,16 @@ class Mean_Teacher_model_1d(Model):
                                                        evaluation_span=100,
                                                        max_step=self.max_step)  # batch*evaluation_span = dataset size = one epoch
 
-        for batch in dataset.training_generator(batch_size=self.batch_size, portion= 0.5):
+        for labeled, unlabeled in dataset.training_generator(batch_size=self.batch_size, portion= 0.5):
 
             accuracy, loss, lossc, wm, _ = self.run([self.accuracy, self.loss,
                                                      self.loss_c, self.warmup,
                                                  self.train_op],
-                                        feed_dict={self.input_x: batch['x'],
-                                                   self.input_dev: batch['dev'],
-                                                   self.input_y: batch['y'],
+                                        feed_dict={self.input_x: labeled['x'],
+                                                   self.input_dev: labeled['dev'],
+                                                   self.input_y: labeled['y'],
+                                                   self.unlabel_x: unlabeled['x'],
+                                                   self.unlabel_dev: unlabeled['dev'],
                                                    self.is_training: True})
             step_control = self.run(self.training_control)
             if step_control['time_to_print']:
