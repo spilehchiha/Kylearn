@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from framework.dataset import Dataset
-from utils.resampling import multi_inputs_random_upsampling
+from utils.mini_batch import random_index
 import collections
-class Attn_dataset(Dataset):
+class Attn_dataset_1d(Dataset):
     def __init__(self, feature_path, dev_path, label_path, out_num):
         super().__init__()
 
@@ -14,7 +14,8 @@ class Attn_dataset(Dataset):
         # y = np.load(label_path + '_train.npy').reshape(-1)
         # y = y-1
         # y = np.eye(out_num)[y].reshape([-1, out_num])
-        y = np.load(label_path + '_train.npy').reshape([-1, out_num])
+        y = np.load(label_path + '_train.npy')
+        y = y.reshape([-1, out_num])
         assert X.shape[0] == y.shape[0]
         assert dev.shape[0] == y.shape[0]
         self.train_set = np.zeros(X.shape[0], dtype=[
@@ -62,12 +63,29 @@ class Attn_dataset_2d(Dataset):
         dataset['x'] = X
         dataset['dev'] = dev
         dataset['y'] = y
-
-        anomaly = dataset[dataset['y'].flatten() != 0]
-        normal = dataset[dataset['y'].flatten() == 0]
-        del dataset
-        normal,_ = train_test_split(normal, train_size= anomaly.shape[0], random_state=22)
-        self.train_set,self.test_set = train_test_split(
-            np.concatenate([anomaly, normal], axis=0), test_size=0.2, random_state=23
+        # normal,_ = train_test_split(normal, train_size= anomaly.shape[0], random_state=22)
+        self.train_set,self.test_set = train_test_split(dataset, test_size=0.1, random_state=23
         )
-        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=24)
+        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.02, random_state=24)
+        del dataset
+
+        self.anomaly = self.train_set[self.train_set['y'].flatten() != 0]
+        self.normal = self.train_set[self.train_set['y'].flatten() == 0]
+
+    def negative_generator(self, batch_size=50, random=np.random):
+        assert batch_size > 0 and len(self.normal) > 0
+        for batch_idxs in random_index(len(self.normal), batch_size, random):
+            yield self.normal[batch_idxs]
+
+    def positive_generator(self, batch_size=50, random=np.random):
+        assert batch_size > 0 and len(self.anomaly) > 0
+        for batch_idxs in random_index(len(self.anomaly), batch_size, random):
+            yield self.anomaly[batch_idxs]
+
+    def training_generator(self, batch_size=100, portion = 0.5):
+        pos = self.positive_generator(batch_size=batch_size - int(batch_size * portion))
+        neg = self.negative_generator(batch_size = int(batch_size * portion))
+        while True:
+            l = pos.__next__()
+            u = neg.__next__()
+            yield np.concatenate([l, u], axis=0)

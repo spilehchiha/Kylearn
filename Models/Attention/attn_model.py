@@ -15,6 +15,7 @@ class Attn_model_1d(Model):
         self.patience = 0
         initializer = tf.contrib.layers.variance_scaling_initializer()
 
+
         with tf.variable_scope("input"):
             self.input_x = tf.placeholder(tf.float32, [None] + input_shape, name='features')
             self.input_dev = tf.placeholder(tf.float32, [None, dev_num], name='dev_type')
@@ -93,8 +94,9 @@ class Attn_model_1d(Model):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         train_op = optimizer.minimize(self.loss, global_step=self.global_step)
         self.train_op = tf.group([train_op, update_ops])
-        self.saver = tf.train.Saver(max_to_keep=10)
+        self.saver = tf.train.Saver(max_to_keep=11)
         self.writer = tf.summary.FileWriter(self.tensorboard_path)
+
 
     def classifier(self, network, input, num_classes, is_training):
 
@@ -109,8 +111,7 @@ class Attn_model_1d(Model):
 
     def train(self, dataset):
         self.training_control = utils.training_control(self.global_step, print_span=10,
-                                                       evaluation_span=round(
-                                                           dataset.train_set.shape[0] / self.batch_size),
+                                                       evaluation_span=100,
                                                        max_step=100000)  # batch*evaluation_span = dataset size = one epoch
 
         for batch in dataset.training_generator(batch_size=self.batch_size):
@@ -119,7 +120,7 @@ class Attn_model_1d(Model):
                                         feed_dict={self.input_x: batch['x'],
                                                    self.input_dev: batch['dev'],
                                                    self.input_y: batch['y'],
-                                                   self.is_training: True})
+                                                   self.is_training: False})
             step_control = self.run(self.training_control)
             if step_control['time_to_print']:
                 print('train_loss= ' + str(loss) + '    train_acc= '+str(accuracy)+'          round' + str(step_control['step']))
@@ -136,7 +137,7 @@ class Attn_model_1d(Model):
                                  feed_dict={self.input_x: val_data['x'],
                                             self.input_dev: val_data['dev'],
                                             self.input_y: val_data['y'],
-                                            self.is_training: True})
+                                            self.is_training: False})
         print('val_loss= ' + str(loss) + '    val_acc= '+str(accuracy)+'          round: ' + str(step))
         '''early stoping'''
         if loss < self.best_loss:
@@ -155,33 +156,33 @@ class Attn_model_1d(Model):
 
     def get_prediction(self, data, is_training=False):
         prediction = self.run(self.prediction, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return prediction
 
     def get_accuracy(self, data, is_training=False):
         accuracy = self.run(self.accuracy, feed_dict = {
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
-            self.input_y: data.test_set['y'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
+            self.input_y: data['y'],
             self.is_training: is_training
         })
         return accuracy
 
     def get_logits(self, data, is_training=False):
         logits = self.run([self.logits], feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return logits
 
     def get_proba(self, data, is_training=False):
         proba = self.run(self.proba, feed_dict={
-            self.input_x: data.test_set['x'],
-            self.input_dev: data.test_set['dev'],
+            self.input_x: data['x'],
+            self.input_dev: data['dev'],
             self.is_training: is_training
         })
         return proba
@@ -310,11 +311,10 @@ class Attn_model_2d(Model):
 
     def train(self, dataset):
         self.training_control = utils.training_control(self.global_step, print_span=10,
-                                                       evaluation_span=round(
-                                                           dataset.train_set.shape[0] / self.batch_size),
+                                                       evaluation_span=200,
                                                        max_step=100000)  # batch*evaluation_span = dataset size = one epoch
 
-        for batch in dataset.training_generator(batch_size=self.batch_size):
+        for batch in dataset.training_generator(batch_size=self.batch_size, portion=0.5):
 
             accuracy, loss, _ = self.run([self.accuracy, self.loss, self.train_op],
                                         feed_dict={self.input_x: batch['x'],
