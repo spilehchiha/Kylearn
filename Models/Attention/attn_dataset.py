@@ -89,3 +89,53 @@ class Attn_dataset_2d(Dataset):
             l = pos.__next__()
             u = neg.__next__()
             yield np.concatenate([l, u], axis=0)
+class AttnDataSet2DMultiClass(Dataset):
+    def __init__(self, feature_path, dev_path, label_path, out_num):
+        super().__init__()
+
+        # train set
+        X = np.expand_dims(np.load(feature_path, allow_pickle=True), axis=-1)
+        dev = np.load(dev_path, allow_pickle=True)
+        y = np.load(label_path, allow_pickle=True)
+        assert X.shape[0] == y.shape[0]
+        assert dev.shape[0] == y.shape[0]
+        dataset = np.zeros(X.shape[0], dtype=[
+            ('x', np.float32, (X.shape[1:])),
+            ('dev', np.int32, (dev.shape[1])),
+            ('y', np.int32, ([out_num]))
+        ])
+        dataset['x'] = X
+        dataset['dev'] = dev
+        dataset['y'] = y
+
+        class_1 = dataset[dataset['y'][:, 0] == 1]
+        class_2 = dataset[dataset['y'][:, 1] == 1]
+        class_3 = dataset[dataset['y'][:, 2] == 1]
+        class_4 = dataset[dataset['y'][:, 3] == 1]
+        class_5 = dataset[dataset['y'][:, 4] == 1]
+        class_6 = dataset[dataset['y'][:, 5] == 1]
+        class_7 = dataset[dataset['y'][:, 6] == 1]
+        class_8 = dataset[dataset['y'][:, 7] == 1]
+        class_9 = dataset[dataset['y'][:, 8] == 1]
+        class_10 = dataset[dataset['y'][:, 9] == 1]
+        class_11 = dataset[dataset['y'][:, 10] == 1]
+        class_12 = dataset[dataset['y'][:, 11] == 1]
+        del dataset
+
+        class_1, _ = train_test_split(class_1, train_size=0.8, random_state=21)
+        class_2, _ = train_test_split(class_2, train_size=0.8, random_state=25)
+        class_3, _ = train_test_split(class_3, train_size=0.8, random_state=26)
+        class_4, _ = train_test_split(class_4, train_size=0.8, random_state=27)
+        class_5, _ = train_test_split(class_5, train_size=0.8, random_state=28)
+        class_6, _ = train_test_split(class_6, train_size=0.8, random_state=29)
+        class_7, _ = train_test_split(class_7, train_size=0.8, random_state=30)
+        class_8, _ = train_test_split(class_8, train_size=0.8, random_state=31)
+        class_9, _ = train_test_split(class_9, train_size=0.8, random_state=32)
+        class_10, _ = train_test_split(class_10, train_size=0.8, random_state=33)
+        class_11, _ = train_test_split(class_11, train_size=0.8, random_state=34)
+        class_12, _ = train_test_split(class_12, train_size=0.8, random_state=35)
+
+        self.train_set, self.test_set = train_test_split(
+            np.concatenate([class_1, class_2, class_3, class_4, class_5, class_6, class_7, class_8, class_9, class_10,
+                            class_11, class_12], axis=0), test_size=0.2, random_state=23)
+        self.train_set, self.val_set = train_test_split(self.train_set, test_size=0.1, random_state=24)
